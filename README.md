@@ -72,35 +72,17 @@ You can try the **Spot the Phish** web application by clicking on this link :  [
 
 ## The "Spot the Phish" app description 
 
-holds 50 extra questions covering emails, URLs, SMS and calls, social engineering, good practices, incident response, work payments, and QR codes and attachments.
-
-Phishing basics: the main attack types (phishing, spear phishing, whaling, smishing, vishing, business email compromise, QR codes).
-Recognizing emails: a fake bank email where the learner taps the 7 suspicious elements and gets an explanation for each.
-Fake websites: how to read a web address, plus a real-or-fake game on 6 look-alike URLs.
-Social engineering: 7 tactics, each with a sample line, why it works and how to counter it, plus pretexting.
-Best practices: an 11-item habits checklist and a "Stop, Check, Report" routine.
-Real-world cases: 6 reported incidents (Target, the Facebook/Google invoice fraud, the 2016 campaign email theft, Twitter 2020, Uber 2022, a 2023 casino help-desk attack), each with a lesson.
-Quiz: 8 scenario questions with an explanation after each answer, a final score and a review of missed questions. One question is a mobile-money SMS scenario.
-
----
-
-# Spot the Phish — User Guide
-
-Nov 26, 2026 · @Barthelemy
-
-## Overview
-
-Spot the Phish is a bilingual (English and French) phishing awareness course delivered as one self-contained HTML file. It needs no server, no account and no installation.
+Spot the Phish is a bilingual (English and French) phishing awareness course delivered as one self-contained HTML file. 
 
 The course has seven core modules, a fixed 10-question Mindset Quiz and an optional game called PhishGame with a bank of 50 questions. A progression bar at the top shows how much of the core course you have completed.
 
-- **Audience:** staff, students and the general public who need to recognize phishing emails, fake websites and social engineering.
+- **Audience:** staff, students and the general public in order to recognize phishing emails, fake websites and social engineering.
 - **Languages:** English by default, with a switch to French at any time.
-- **Works on:** any modern browser, on a computer or a phone.
+- **Works on:** any modern browser, on a computer or a mobile phone.
 
 ## Getting and opening the code file
 
-The whole app is the single file `spot-the-phish.html`; you can open it on your own computer or put it online.
+The whole app is the single file `/Task2/spot-the-phish.html`; you can open it on your own computer or put it online. It does not require a server or installation. So it can easily be shared hand-to-hand or downloaded.
 
 1. **Save the file.** Keep `spot-the-phish.html` in any folder.
 2. **Open it locally.** Double-click the file, or drag it into Chrome, Edge, Firefox or Safari. It runs straight from your disk.
@@ -225,6 +207,11 @@ Know these limits before you deploy it:
 
 A mobile app version exists as an Expo (React Native) project with the same content and functions, and it also saves progress and language on the phone. To build an Android APK, unzip the project, run `npm install`, then `npx expo prebuild --platform android`, open the `android` folder in Android Studio and choose Build APK(s). The project's README repeats these steps.
 
+---
+
+## Spot the Phish Documentation
+
+My web app User Guide **`/Task2/Spot the Phish -- User Guide.md`** and slides for its presentation to the public **`/Task2/Spot the Phish -- Solution Presentation.pdf`** are documented and publicly available.
 
 ---
 
