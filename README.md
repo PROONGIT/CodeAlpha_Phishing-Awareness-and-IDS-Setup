@@ -56,7 +56,9 @@ This internship program offers hands-on experience in cybersecurity principles a
 
 ## 💎 My built solution
 
-I'll build an interactive phishing awareness module as a shareable web page, with lessons, real-world examples and quizzes.
+I built an interactive phishing awareness module as a shareable web page, with lessons, real-world examples and quizzes.
+
+The web application **Spot the Phish** 
 
 
 ---
