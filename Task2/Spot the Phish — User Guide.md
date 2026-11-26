@@ -1,6 +1,6 @@
 # Spot the Phish — User Guide
 
-Nov 26, 2026 · @Barthelemy
+Nov 26, 2026 · @AZIAGBEDO KOKOU SODJINE
 
 ## Overview
 
