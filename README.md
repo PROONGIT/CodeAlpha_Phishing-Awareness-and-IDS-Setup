@@ -54,12 +54,31 @@ This internship program offers hands-on experience in cybersecurity principles a
 
 ● Include real-world examples and interactive quizzes for better engagement.
 
+---
+
 ## 💎 My built solution
 
 I built an interactive phishing awareness module as a shareable web page, with lessons, real-world examples and quizzes.
 
 The web application **Spot the Phish** is available at :  https://proongit.github.io/CodeAlpha_Phishing-Awareness-and-IDS-Setup/
 
+It's a course of about 25 minutes, accessible in English and French, with a progress bar that tracks the seven modules of the training. 
+
+The **PhishGame** is an optional Module 8 that is a play-to-learn game.
+
+---
+
+## The "Spot the Phish" app description 
+
+holds 50 extra questions covering emails, URLs, SMS and calls, social engineering, good practices, incident response, work payments, and QR codes and attachments.
+
+Phishing basics: the main attack types (phishing, spear phishing, whaling, smishing, vishing, business email compromise, QR codes).
+Recognizing emails: a fake bank email where the learner taps the 7 suspicious elements and gets an explanation for each.
+Fake websites: how to read a web address, plus a real-or-fake game on 6 look-alike URLs.
+Social engineering: 7 tactics, each with a sample line, why it works and how to counter it, plus pretexting.
+Best practices: an 11-item habits checklist and a "Stop, Check, Report" routine.
+Real-world cases: 6 reported incidents (Target, the Facebook/Google invoice fraud, the 2016 campaign email theft, Twitter 2020, Uber 2022, a 2023 casino help-desk attack), each with a lesson.
+Quiz: 8 scenario questions with an explanation after each answer, a final score and a review of missed questions. One question is a mobile-money SMS scenario.
 
 ---
 
