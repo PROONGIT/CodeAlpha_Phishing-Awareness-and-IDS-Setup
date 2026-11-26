@@ -1,0 +1,742 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Spot the Phish</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: a single scrolling course in EN or FR. Sticky bar with module links, language switch and progress. Eight modules, each with one interactive element. Mono type marks anything an attacker forges: addresses, URLs, headers. */
+:root{
+  --bg:#F2F5F4; --surface:#FFFFFF; --ink:#16222B; --muted:#586872; --line:#D5DDE0;
+  --accent:#0B6E6E; --accent-ink:#FFFFFF; --accent-soft:#DDF0EE;
+  --bad:#B42318; --bad-bg:#FDECEA; --good:#1B7A3E; --good-bg:#E6F4EA; --warn:#8A5200; --warn-bg:#FFF1D6;
+  --code:#E8EEF0;
+  --f-head:"Space Grotesk",system-ui,sans-serif; --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F171C; --surface:#172229; --ink:#E6EDF0; --muted:#9BAAB3; --line:#2A3944;
+  --accent:#4FC3C3; --accent-ink:#06202A; --accent-soft:#143036;
+  --bad:#FF9188; --bad-bg:#3A1B1A; --good:#6FD39A; --good-bg:#14301F; --warn:#F5C26B; --warn-bg:#3A2C10; --code:#1F2D35; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F171C; --surface:#172229; --ink:#E6EDF0; --muted:#9BAAB3; --line:#2A3944;
+  --accent:#4FC3C3; --accent-ink:#06202A; --accent-soft:#143036;
+  --bad:#FF9188; --bad-bg:#3A1B1A; --good:#6FD39A; --good-bg:#14301F; --warn:#F5C26B; --warn-bg:#3A2C10; --code:#1F2D35; color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px;}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--surface);z-index:30}
+.wrap{max-width:860px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-head);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,6vw,3.2rem);font-weight:700;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,4vw,2rem);font-weight:600;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-size:.88em}
+.label{font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);
+  margin-left:calc(-1*max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1*max(16px,env(safe-area-inset-right,0px)));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));}
+.bar-in{max-width:860px;margin:0 auto;display:grid;gap:6px;padding:8px 0}
+.bar nav{display:flex;flex-wrap:wrap;gap:2px 4px;min-width:0}
+.bar-row{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:6px}
+.meter b{color:var(--ink);font-weight:600}
+.meter a{font-size:.78rem}
+#pct{color:var(--ink);font-weight:600;min-width:2.6em}
+section,#progress-card{scroll-margin-top:120px}
+.callout{background:var(--accent-soft);color:var(--ink);border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 8px 8px 0;font-size:1.05rem;font-weight:500}
+.dom-chip{background:var(--accent);color:var(--accent-ink);padding:2px 8px;border-radius:4px;font-weight:600}
+.pc-list{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:6px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.pc-list li{display:flex;gap:8px;align-items:center;font-size:.92rem;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+.pc-list li.ok{background:var(--good-bg);border-color:var(--good)}
+.pc-list a{color:var(--ink);text-decoration:none}
+.done-btn.on{background:var(--good);color:var(--bg)}
+.done-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
+@media(max-width:520px){.bar nav a{padding:4px 7px;font-size:.78rem}}
+.bar nav a{white-space:nowrap;text-decoration:none;color:var(--muted);font-size:.85rem;font-weight:500;padding:6px 10px;border-radius:6px}
+.bar nav a:hover{background:var(--code);color:var(--ink)}
+.meter{display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+.track{width:110px;height:8px;background:var(--code);border-radius:4px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--accent);transition:width .3s}
+.lang{display:flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.lang button{background:transparent;border:0;padding:5px 11px;font-weight:600;font-size:.8rem;color:var(--muted)}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+header.hero{padding:56px 0 40px;display:grid;gap:20px}
+.hero p.lede{font-size:1.15rem;color:var(--muted);max-width:60ch}
+.stop{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px}
+.stop span{font-family:var(--f-head);font-weight:600;font-size:.95rem;padding:8px 14px;border:1.5px solid var(--ink);border-radius:6px}
+.stop span b{color:var(--accent)}
+
+section{padding:48px 0;border-top:1px solid var(--line);display:grid;gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.grid>*{min-width:0}
+.pill{display:inline-block;font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);letter-spacing:.03em}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.note{background:var(--warn-bg);color:var(--warn);padding:12px 14px;border-radius:8px;font-size:.9rem}
+
+.mail{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.mail-h{padding:14px 18px;border-bottom:1px solid var(--line);display:grid;gap:4px;font-size:.9rem;background:var(--code)}
+.mail-b{padding:20px 18px;display:grid;gap:14px;overflow-wrap:anywhere}
+.mail-h .row{display:flex;gap:8px;flex-wrap:wrap}
+.mail-h .k{color:var(--muted);min-width:56px}
+.hs{background:none;border:0;border-bottom:2px dashed var(--bad);padding:0;text-align:left;cursor:pointer;color:inherit;font:inherit}
+.hs:hover{background:var(--bad-bg)}
+.hs.found{border-bottom:2px solid var(--good);background:var(--good-bg)}
+.fake-btn{display:inline-block;background:#2D5BE3;color:#fff;padding:10px 18px;border-radius:6px;font-weight:600;font-size:.95rem}
+.attach{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:.85rem}
+.flags{display:grid;gap:8px}
+.flag{display:grid;gap:2px;padding:12px 14px;border-left:4px solid var(--good);background:var(--good-bg);border-radius:0 8px 8px 0;font-size:.92rem}
+.flag b{font-family:var(--f-head)}
+.tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:10px 16px;font-weight:600;font-size:.92rem}
+.btn:hover{opacity:.88}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+
+.url{font-family:var(--f-mono);font-size:clamp(.8rem,2.6vw,1.05rem);padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow-x:auto;white-space:nowrap}
+.url .s{color:var(--muted)} .url .sub{color:var(--warn)} .url .dom{background:var(--accent-soft);color:var(--accent);font-weight:600;padding:2px 4px;border-radius:4px} .url .p{color:var(--muted)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+.game{display:grid;gap:10px}
+.g-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.g-row .u{font-family:var(--f-mono);font-size:.85rem;overflow-wrap:anywhere;min-width:0}
+.g-row .why{grid-column:1/-1;font-size:.9rem;color:var(--muted)}
+.g-row.ok{border-color:var(--good)} .g-row.no{border-color:var(--bad)}
+.choice{display:flex;gap:6px}
+.choice button{border:1.5px solid var(--line);background:transparent;border-radius:8px;padding:6px 12px;font-weight:600;font-size:.85rem}
+.choice button:hover:not(:disabled){border-color:var(--accent)}
+.choice button:disabled{cursor:default;opacity:.55}
+@media(max-width:520px){.g-row{grid-template-columns:1fr}}
+
+.tac h3{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.tac q{display:block;font-family:var(--f-mono);font-size:.82rem;color:var(--bad);background:var(--bad-bg);padding:8px 10px;border-radius:6px;margin:10px 0;quotes:none}
+.tac p{font-size:.92rem;color:var(--muted)}
+.tac .fix{margin-top:8px;color:var(--ink)}
+.types{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.types div{padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:.9rem}
+.types b{font-family:var(--f-head);display:block}
+
+.check{display:grid;gap:8px;padding:0;margin:0;list-style:none}
+.check label{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:8px;cursor:pointer;transition:background .2s,border-color .2s}
+.check label.on{background:var(--good-bg);border-color:var(--good)}
+.check input{margin-top:5px;width:18px;height:18px;accent-color:var(--good);flex:none}
+.check small{display:block;color:var(--muted)}
+
+.case{display:grid;gap:8px;align-content:start}
+.case .yr{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.case .lesson{border-top:1px solid var(--line);padding-top:8px;font-size:.9rem}
+.case .lesson b{color:var(--accent)}
+
+.qh{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.q-prompt{font-family:var(--f-head);font-size:1.2rem;font-weight:600;line-height:1.3}
+.opts{display:grid;gap:8px;margin-top:14px}
+.opt{text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:12px 14px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{border-color:var(--good);background:var(--good-bg)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt:disabled{cursor:default;color:inherit}
+.expl{margin-top:14px;padding:12px 14px;background:var(--code);border-radius:8px;font-size:.92rem}
+.score{display:grid;gap:12px}
+.score .big{font-family:var(--f-head);font-size:3rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.review{display:grid;gap:8px;font-size:.9rem;padding:0;margin:0;list-style:none}
+.review li{display:flex;gap:10px;align-items:flex-start}
+.review .pill{flex:none}
+.pips{display:flex;gap:6px;align-items:center}
+.pip{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:.8rem;font-weight:600;font-variant-numeric:tabular-nums}
+.pip.cur{border-color:var(--accent);color:var(--accent)}
+.pip.ok{background:var(--good);border-color:var(--good);color:var(--bg)}
+.rules{display:grid;gap:6px;padding-left:18px;margin:0;color:var(--muted);font-size:.92rem}
+footer{padding-top:32px;font-size:.85rem;color:var(--muted);border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="bar"><div class="bar-in">
+  <nav aria-label="Modules">
+    <a href="#intro" data-t="n_intro"></a><a href="#email" data-t="n_email"></a><a href="#sites" data-t="n_sites"></a><a href="#tactics" data-t="n_tactics"></a><a href="#habits" data-t="n_habits"></a><a href="#cases" data-t="n_cases"></a><a href="#quiz" data-t="n_quiz"></a><a href="#phishgame" data-t="n_game"></a>
+  </nav>
+  <div class="bar-row">
+    <div class="meter"><b data-t="prog"></b><span id="pct">0%</span><div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div><a href="#progress-card" data-t="prog_how"></a></div>
+    <div class="lang" role="group" aria-label="Language / Langue">
+      <button data-l="en" aria-pressed="true">EN</button><button data-l="fr" aria-pressed="false">FR</button>
+    </div>
+  </div>
+</div></div>
+
+<div class="wrap">
+<header class="hero">
+  <span class="label" data-t="h_label"></span>
+  <h1 data-t="h_title"></h1>
+  <p class="lede" data-t="h_lede"></p>
+  <div class="stop"><span data-t="stop1"></span><span data-t="stop2"></span><span data-t="stop3"></span></div>
+</header>
+
+<div class="card" id="progress-card">
+  <h3 data-t="pc_h"></h3>
+  <p style="margin-top:8px" data-t="pc_p"></p>
+  <ul class="pc-list" id="pc-list"></ul>
+</div>
+
+<section id="intro">
+  <span class="label" data-t="mod1"></span>
+  <h2 data-t="i_title"></h2>
+  <p data-t="i_p"></p>
+  <div class="types" id="types"></div>
+  <div class="done-row"><button class="btn done-btn" data-k="intro"></button><span data-t="done_hint"></span></div>
+</section>
+
+<section id="email">
+  <span class="label" data-t="mod2"></span>
+  <h2 data-t="e_title"></h2>
+  <p data-t="e_intro"></p>
+  <div class="mail">
+    <div class="mail-h mono">
+      <div class="row"><span class="k" data-t="m_from"></span><span>"Meridian Bank Security" &lt;<button class="hs" data-f="0">alerts@meridian-bank-secure.example</button>&gt;</span></div>
+      <div class="row"><span class="k" data-t="m_to"></span><span data-t="m_undisc"></span></div>
+      <div class="row"><span class="k" data-t="m_subj"></span><button class="hs" data-f="1" data-t="m_hs1"></button></div>
+    </div>
+    <div class="mail-b">
+      <p><button class="hs" data-f="2" data-t="m_hs2"></button></p>
+      <p><span data-t="m_p1a"></span> <button class="hs" data-f="3" data-t="m_hs3"></button> <button class="hs" data-f="4" data-t="m_hs4"></button><span data-t="m_p1b"></span></p>
+      <p><button class="hs fake-btn" data-f="5" data-t="m_hs5" style="border:0"></button><br><span class="mono" style="color:var(--muted)"><span data-t="m_links"></span> meridian-bank.secure-login.example/verify?id=88213</span></p>
+      <p><button class="hs attach" data-f="6" style="border:1px solid var(--line)">📎 <span data-t="m_hs6"></span></button></p>
+    </div>
+  </div>
+  <div class="tools"><span class="mono" id="fcount"></span><button class="btn alt" id="revealAll" data-t="e_reveal"></button></div>
+  <div class="flags" id="flags" aria-live="polite"></div>
+  <div class="card"><h3 data-t="e_scan_h"></h3><p style="margin-top:8px;color:var(--muted)" data-t="e_scan_p"></p></div>
+</section>
+
+<section id="sites">
+  <span class="label" data-t="mod3"></span>
+  <h2 data-t="s_title"></h2>
+  <p data-t="s_p"></p>
+  <div class="url"><span class="s">https://</span><span class="sub">login.</span><span class="dom">meridian-bank.example</span><span class="p">/session/start?ref=app</span></div>
+  <div class="legend">
+    <span><i style="background:var(--muted)"></i><span data-t="s_l1"></span></span>
+    <span><i style="background:var(--warn)"></i><span data-t="s_l2"></span></span>
+    <span><i style="background:var(--accent)"></i><span data-t="s_l3"></span></span>
+    <span><i style="background:var(--line)"></i><span data-t="s_l4"></span></span>
+  </div>
+  <p class="note" data-t="s_note"></p>
+  <h3 data-t="s_prac"></h3>
+  <p class="callout"><span data-t="s_prac_p"></span> <span class="mono dom-chip">meridian-bank.example</span></p>
+  <div class="game" id="urlgame"></div>
+  <div class="card"><h3 data-t="s_other_h"></h3><p style="margin-top:8px;color:var(--muted)" data-t="s_other_p"></p></div>
+</section>
+
+<section id="tactics">
+  <span class="label" data-t="mod4"></span>
+  <h2 data-t="t_title"></h2>
+  <p data-t="t_intro"></p>
+  <div class="grid" id="tactics-grid"></div>
+  <div class="card"><h3 data-t="t_pre_h"></h3><p style="margin-top:8px;color:var(--muted)" data-t="t_pre_p"></p></div>
+  <div class="done-row"><button class="btn done-btn" data-k="tactics"></button><span data-t="done_hint"></span></div>
+</section>
+
+<section id="habits">
+  <span class="label" data-t="mod5"></span>
+  <h2 data-t="b_title"></h2>
+  <p data-t="b_intro"></p>
+  <ul class="check" id="check"></ul>
+  <p class="mono" id="hcount" style="color:var(--muted)"></p>
+</section>
+
+<section id="cases">
+  <span class="label" data-t="mod6"></span>
+  <h2 data-t="c_title"></h2>
+  <p data-t="c_intro"></p>
+  <div class="grid" id="cases-grid"></div>
+  <div class="done-row"><button class="btn done-btn" data-k="cases"></button><span data-t="done_hint"></span></div>
+</section>
+
+<section id="quiz">
+  <span class="label" data-t="mod7"></span>
+  <h2 data-t="q_title"></h2>
+  <p data-t="q_intro"></p>
+  <div class="card" id="quizbox" aria-live="polite"></div>
+</section>
+
+<section id="phishgame">
+  <span class="label" data-t="mod8"></span>
+  <h2>PhishGame</h2>
+  <p data-t="g_intro"></p>
+  <div class="card" id="pgbox" aria-live="polite"></div>
+</section>
+
+<footer data-t="foot"></footer>
+</div>
+
+<script>
+(function(){
+var L="en";
+try{var sv=localStorage.getItem("spf-lang");if(sv==="fr"||sv==="en")L=sv}catch(e){}
+function ix(){return L==="en"?0:1}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function $(s){return document.querySelector(s)}
+function fmt(s,o){return s.replace(/\{(\w+)\}/g,function(_,k){return o[k]})}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+
+/* ============ static translations ============ */
+var T={en:{
+n_intro:"Basics",n_email:"Emails",n_sites:"Fake sites",n_tactics:"Social engineering",n_habits:"Habits",n_cases:"Real cases",n_quiz:"Mindset Quiz",n_game:"PhishGame",
+h_label:"Security awareness course · about 25 minutes",h_title:"Spot the phish before it spots you.",
+h_lede:"Phishing is a message built to make you hand over a password, a payment or a click. This course shows how to recognize fake emails and websites, how attackers manipulate people, and what to do the moment something feels off.",
+stop1:"<b>STOP</b> before you act",stop2:"<b>CHECK</b> through another channel",stop3:"<b>REPORT</b> what you saw",
+mod1:"Module 1",mod2:"Module 2",mod3:"Module 3",mod4:"Module 4",mod5:"Module 5",mod6:"Module 6",mod7:"Module 7",mod8:"Module 8 · optional",
+i_title:"What phishing is, and the forms it takes",
+i_p:"The attacker pretends to be someone you trust (a bank, a manager, a delivery company, IT support) and asks for something that looks routine: confirm an account, approve a payment, open a file. The goal is usually stolen credentials, money, or a foothold for malware. The message changes; the structure stays the same: <b>a believable sender, a reason to hurry, and a link, number or file to act on.</b>",
+e_title:"Recognize a phishing email",e_intro:"This message is fake and built to be full of warning signs. Tap every underlined part you think is suspicious. There are 7 to find.",
+m_from:"From",m_to:"To",m_subj:"Subject",m_undisc:"undisclosed-recipients",
+m_hs1:"URGENT: your account will be suspended in 24 hours",m_hs2:"Dear Customer,",
+m_p1a:"We noticed unusual activity on your account.",m_hs3:"Verify your identity immediately or your account will be permanently closed and your funds frozen.",m_hs4:"Your acount security is our priority",m_p1b:", so please act today.",
+m_hs5:"Verify Account Now",m_links:"links to:",m_hs6:"Security_Form.html",
+e_reveal:"Reveal all",e_found:"{n} / 7 found",
+e_scan_h:"The quick scan, in order",
+e_scan_p:"1) Who really sent it? Read the full address, not the display name. 2) What does it want me to do, and how fast? 3) Where does the link go? Hover or long-press to see the real destination. 4) Does this match how this organization normally contacts me? If any answer is wrong, do not click. Open the official app or type the address yourself.",
+s_title:"Recognize a fake website",
+s_p:"Only one part of a web address tells you who owns the site: the <b>registered domain</b>, the name just before the final ending (.com, .tg, .org). Everything to its left is chosen by whoever owns that domain, and everything after the first single slash is just a page on that site.",
+s_l1:"Protocol",s_l2:"Subdomain (created freely by the domain owner)",s_l3:"Registered domain: the owner",s_l4:"Page path",
+s_note:"Training addresses here end in .example, a reserved ending that never resolves, so none of these are real sites. In real life the same patterns appear with .com, .net and country endings. A padlock or https only means the connection is encrypted. Attackers get certificates too, so it does not prove the site is genuine.",
+s_prac:"Practice: real or fake?",s_prac_p:"The real bank's domain is",s_real:"Real",s_fake:"Fake",s_ok:"Correct. ",s_no:"Not quite. ",
+s_other_h:"Other signs a page is a copy",
+s_other_p:"You arrived through a message instead of your own bookmark. The page asks for more than usual (card PIN, full password and one-time code together). Small layout, spelling or logo flaws. The login box appears in a pop-up. The address bar shows an unfamiliar domain, even if the page looks perfect.",
+t_title:"Social engineering: how attackers trick people",
+t_intro:"Attackers exploit normal human reactions such as trust, fear and the wish to help. Each tactic below pushes you to act before you think. Recognizing the tactic is the first defense: stay alert, pause, and check.",
+t_why:"Why it works:",t_fix:"Counter:",
+t_pre_h:"Pretexting",
+t_pre_p:"Many attacks start with a made-up scenario, the <i>pretext</i>: a new employee who 'lost access', an auditor who 'needs the figures', a supplier whose 'bank changed'. Attackers research names, titles and tools on LinkedIn, company sites and social media so the story sounds right. A detailed, plausible story is not proof of identity.",
+b_title:"Habits that keep you safe",b_intro:"Tick each habit once you have it or decide to adopt it today.",b_count:"{n} of {m} habits adopted",
+c_title:"Real-world cases",c_intro:"These incidents were widely reported. Details are summarized, and the pattern matters more than the numbers.",c_lesson:"Lesson:",
+q_title:"Mindset Quiz",q_intro:"Ten scenario questions, always the same and in the same order, so you can get familiar with them. You get the explanation after every answer.",
+q_qn:"Question {i} of {n}",q_score:"Score {s}",q_next:"Next question",q_see:"See results",q_ok:"Correct. ",q_no:"Not this one. ",
+q_res:"Result",q_v1:"Strong instincts. Keep applying the stop, check, report routine.",q_v2:"Solid base. Revisit the modules behind the questions you missed.",q_v3:"Worth another pass through modules 2 to 5, then retry.",
+q_rev:"Review",q_miss:"Missed",q_perfect:"You answered every question correctly.",q_retry:"Try again",q_more:"Want to go further? Try PhishGame below.",q_goto:"Go to PhishGame",
+mod8x:"",
+g_intro:"Go further with 50 extra questions. Each session deals a random set of 10 questions per round, in a new order. Score more than 50% (at least 6 out of 10) to unlock the next round. There are 5 rounds, and no question repeats within a session.",
+prog:"Your progression",prog_how:"How is it calculated?",
+pc_h:"How your progression is calculated",
+pc_p:"Your progression is the number of core modules completed out of 7, so each module is worth about 14%. Interactive modules complete on their own: Module 2 (find all 7 signs), Module 3 (judge all 6 addresses), Module 5 (tick all 11 habits) and Module 7 (finish the Mindset Quiz). Reading modules (1, 4 and 6) count once you press Done. PhishGame is optional and not counted.",
+done_off:"Mark as done",done_on:"Done ✓",done_hint:"Finished reading? Press Done to count this module in your progression.",
+g_play:"Play Game",g_r1:"50 questions in the bank, 10 per round",g_r2:"5 rounds, from Round 1 to Round 5",g_r3:"More than 50% to unlock the next round",g_r4:"Options and questions are shuffled in every new session",
+g_round:"Round {r} of 5",g_q:"Question {i} of 10",g_rs:"Round score {s}",g_tot:"Total {t}",
+g_done:"Round {r} complete: {s} / 10",g_unlock:"You unlocked Round {n}.",g_start:"Start Round {n}",
+g_over:"Session over. You needed at least 6 out of 10 to continue. Total: {t} correct answers over {k} round(s). A new session deals a fresh random set.",
+g_new:"New session",g_win_h:"PhishGame complete",g_win:"You cleared all 5 rounds with {t} / 50 correct answers. You are ready to help others spot the phish.",g_again:"Play again",g_review:"Questions to review",
+foot:"Sample senders, banks and addresses in this course are fictional. If you think a message is phishing, report it to your IT or security team through their official channel, and report scams involving mobile money to your operator."
+},fr:{
+n_intro:"Les bases",n_email:"E-mails",n_sites:"Faux sites",n_tactics:"Ingénierie sociale",n_habits:"Habitudes",n_cases:"Cas réels",n_quiz:"Quiz Mindset",n_game:"PhishGame",
+h_label:"Formation de sensibilisation à la sécurité · environ 25 minutes",h_title:"Repérez l'hameçon avant qu'il ne vous attrape.",
+h_lede:"Le phishing (ou hameçonnage) est un message conçu pour vous faire livrer un mot de passe, un paiement ou un clic. Cette formation montre comment reconnaître les faux e-mails et faux sites, comment les attaquants manipulent leurs cibles, et quoi faire dès que quelque chose vous semble anormal.",
+stop1:"<b>STOP</b> avant d'agir",stop2:"<b>VÉRIFIEZ</b> par un autre canal",stop3:"<b>SIGNALEZ</b> ce que vous avez vu",
+mod1:"Module 1",mod2:"Module 2",mod3:"Module 3",mod4:"Module 4",mod5:"Module 5",mod6:"Module 6",mod7:"Module 7",mod8:"Module 8 · facultatif",
+i_title:"Ce qu'est le phishing, et ses formes",
+i_p:"L'attaquant se fait passer pour quelqu'un de confiance (une banque, un responsable, un transporteur, le support informatique) et demande quelque chose d'apparemment banal : confirmer un compte, valider un paiement, ouvrir un fichier. Le but est généralement de voler des identifiants ou de l'argent, ou d'installer un logiciel malveillant. Le message change, la structure reste la même : <b>un expéditeur crédible, une raison de se presser, et un lien, un numéro ou un fichier sur lequel agir.</b>",
+e_title:"Reconnaître un e-mail de phishing",e_intro:"Ce message est faux et rempli de signaux d'alerte. Touchez chaque partie soulignée qui vous semble suspecte. Il y en a 7 à trouver.",
+m_from:"De",m_to:"À",m_subj:"Objet",m_undisc:"destinataires-masqués",
+m_hs1:"URGENT : votre compte sera suspendu dans 24 heures",m_hs2:"Cher client,",
+m_p1a:"Nous avons détecté une activité inhabituelle sur votre compte.",m_hs3:"Vérifiez votre identité immédiatement, sinon votre compte sera définitivement fermé et vos fonds gelés.",m_hs4:"La sécurité de votre compt est notre priorité",m_p1b:", veuillez donc agir aujourd'hui.",
+m_hs5:"Vérifier le compte maintenant",m_links:"lien vers :",m_hs6:"Formulaire_Securite.html",
+e_reveal:"Tout révéler",e_found:"{n} / 7 trouvés",
+e_scan_h:"Le contrôle rapide, dans l'ordre",
+e_scan_p:"1) Qui l'a vraiment envoyé ? Lisez l'adresse complète, pas le nom affiché. 2) Que me demande-t-on, et avec quelle urgence ? 3) Où mène le lien ? Survolez-le ou appuyez longuement pour voir la vraie destination. 4) Est-ce conforme à la façon dont cet organisme me contacte d'habitude ? Au moindre doute, ne cliquez pas. Ouvrez l'application officielle ou saisissez vous-même l'adresse.",
+s_title:"Reconnaître un faux site web",
+s_p:"Une seule partie d'une adresse web indique à qui appartient le site : le <b>domaine enregistré</b>, c'est-à-dire le nom juste avant la terminaison finale (.com, .tg, .org). Tout ce qui se trouve à sa gauche est choisi par le propriétaire du domaine, et tout ce qui suit le premier « / » n'est qu'une page de ce site.",
+s_l1:"Protocole",s_l2:"Sous-domaine (créé librement par le propriétaire du domaine)",s_l3:"Domaine enregistré : le propriétaire",s_l4:"Chemin de la page",
+s_note:"Dans cette formation, les adresses se terminent par .example, une terminaison réservée qui ne mène nulle part : aucun de ces sites n'est réel. Dans la vraie vie, les mêmes schémas apparaissent avec .com, .net ou des terminaisons de pays. Un cadenas ou « https » indique seulement que la connexion est chiffrée. Les attaquants obtiennent aussi des certificats : cela ne prouve pas que le site est authentique.",
+s_prac:"Entraînement : vrai ou faux ?",s_prac_p:"Le vrai domaine de la banque est",s_real:"Vrai",s_fake:"Faux",s_ok:"Exact. ",s_no:"Pas tout à fait. ",
+s_other_h:"Autres signes qu'une page est une copie",
+s_other_p:"Vous êtes arrivé par un message plutôt que par votre propre favori. La page demande plus que d'habitude (code PIN de carte, mot de passe complet et code à usage unique ensemble). Petits défauts de mise en page, d'orthographe ou de logo. La zone de connexion s'affiche dans une fenêtre pop-up. La barre d'adresse affiche un domaine inconnu, même si la page est parfaite.",
+t_title:"Ingénierie sociale : comment les attaquants manipulent leurs cibles",
+t_intro:"Les attaquants exploitent des réactions humaines normales comme la confiance, la peur et l'envie d'aider. Chaque tactique ci-dessous vous pousse à agir avant de réfléchir. Reconnaître la tactique est la première défense : restez vigilant, faites une pause et vérifiez.",
+t_why:"Pourquoi ça marche :",t_fix:"Parade :",
+t_pre_h:"Prétexte (pretexting)",
+t_pre_p:"Beaucoup d'attaques commencent par un scénario inventé, le <i>prétexte</i> : un nouvel employé qui a « perdu son accès », un auditeur qui « a besoin des chiffres », un fournisseur dont la « banque a changé ». Les attaquants se renseignent sur les noms, fonctions et outils via LinkedIn, les sites d'entreprise et les réseaux sociaux pour que l'histoire sonne juste. Une histoire détaillée et plausible n'est pas une preuve d'identité.",
+b_title:"Les habitudes qui vous protègent",b_intro:"Cochez chaque habitude lorsque vous l'avez ou décidez de l'adopter dès aujourd'hui.",b_count:"{n} habitudes sur {m} adoptées",
+c_title:"Cas réels",c_intro:"Ces incidents ont été largement relayés. Les faits sont résumés : le schéma compte plus que les chiffres.",c_lesson:"Leçon :",
+q_title:"Quiz Mindset",q_intro:"Dix questions de mise en situation, toujours les mêmes et dans le même ordre, pour vous permettre de vous familiariser. Une explication suit chaque réponse.",
+q_qn:"Question {i} sur {n}",q_score:"Score {s}",q_next:"Question suivante",q_see:"Voir les résultats",q_ok:"Exact. ",q_no:"Pas celle-ci. ",
+q_res:"Résultat",q_v1:"Excellents réflexes. Continuez d'appliquer la routine stop, vérifier, signaler.",q_v2:"Bonne base. Revoyez les modules liés aux questions manquées.",q_v3:"Reprenez les modules 2 à 5, puis réessayez.",
+q_rev:"À revoir",q_miss:"Manquée",q_perfect:"Vous avez répondu juste à toutes les questions.",q_retry:"Réessayer",q_more:"Envie d'aller plus loin ? Essayez PhishGame ci-dessous.",q_goto:"Aller à PhishGame",
+g_intro:"Allez plus loin avec 50 questions supplémentaires. Chaque session distribue au hasard 10 questions par manche, dans un nouvel ordre. Obtenez plus de 50 % (au moins 6 sur 10) pour débloquer la manche suivante. Il y a 5 manches, et aucune question ne se répète au cours d'une session.",
+prog:"Votre progression",prog_how:"Comment est-elle calculée ?",
+pc_h:"Comment votre progression est calculée",
+pc_p:"Votre progression correspond au nombre de modules essentiels terminés sur 7, soit environ 14 % par module. Les modules interactifs se valident d'eux-mêmes : Module 2 (trouver les 7 signes), Module 3 (juger les 6 adresses), Module 5 (cocher les 11 habitudes) et Module 7 (terminer le Quiz Mindset). Les modules de lecture (1, 4 et 6) comptent dès que vous appuyez sur Terminé. PhishGame est facultatif et n'est pas compté.",
+done_off:"Marquer comme terminé",done_on:"Terminé ✓",done_hint:"Lecture finie ? Appuyez sur Terminé pour compter ce module dans votre progression.",
+g_play:"Jouer",g_r1:"50 questions en réserve, 10 par manche",g_r2:"5 manches, de la manche 1 à la manche 5",g_r3:"Plus de 50 % pour débloquer la manche suivante",g_r4:"Questions et réponses sont mélangées à chaque nouvelle session",
+g_round:"Manche {r} sur 5",g_q:"Question {i} sur 10",g_rs:"Score de la manche {s}",g_tot:"Total {t}",
+g_done:"Manche {r} terminée : {s} / 10",g_unlock:"Vous avez débloqué la manche {n}.",g_start:"Lancer la manche {n}",
+g_over:"Fin de session. Il fallait au moins 6 sur 10 pour continuer. Total : {t} bonnes réponses sur {k} manche(s). Une nouvelle session distribue de nouvelles questions au hasard.",
+g_new:"Nouvelle session",g_win_h:"PhishGame terminé",g_win:"Vous avez réussi les 5 manches avec {t} / 50 bonnes réponses. Vous êtes prêt à aider les autres à repérer l'hameçon.",g_again:"Rejouer",g_review:"Questions à revoir",
+foot:"Les expéditeurs, banques et adresses cités dans cette formation sont fictifs. Si vous pensez qu'un message est du phishing, signalez-le à votre équipe informatique ou sécurité par son canal officiel, et signalez à votre opérateur les arnaques liées au mobile money."
+}};
+function tr(k){return T[L][k]}
+function applyStatic(){
+  document.querySelectorAll("[data-t]").forEach(function(el){var v=T[L][el.getAttribute("data-t")];if(v!==undefined)el.innerHTML=v});
+}
+
+/* ============ content data: [EN, FR] ============ */
+var TYPES=[
+ ["Phishing","Phishing","Mass emails to thousands of people, using a common brand.","E-mails envoyés en masse à des milliers de personnes, au nom d'une marque connue."],
+ ["Spear phishing","Spear phishing (ciblé)","Written for one person, using their name, role and real context.","Rédigé pour une personne précise, avec son nom, son poste et un contexte réel."],
+ ["Whaling","Whaling","Spear phishing aimed at executives and finance approvers.","Hameçonnage ciblé visant dirigeants et responsables des paiements."],
+ ["Smishing","Smishing","The same trick by SMS or chat app, often a fake mobile-money alert.","Le même piège par SMS ou messagerie, souvent une fausse alerte de mobile money."],
+ ["Vishing","Vishing","A phone call from a fake help desk, bank or supplier.","Un appel d'un faux support technique, d'une fausse banque ou d'un faux fournisseur."],
+ ["BEC","BEC","Business email compromise: a fake boss or vendor asks for a transfer or new bank details.","Compromission de messagerie professionnelle : un faux dirigeant ou fournisseur demande un virement ou de nouvelles coordonnées bancaires."],
+ ["Quishing","Quishing","A QR code that leads to a fake login page.","Un QR code qui mène vers une fausse page de connexion."],
+ ["Fake sites","Faux sites","A copy of a real login page that records what you type.","Une copie d'une vraie page de connexion qui enregistre ce que vous saisissez."]
+];
+var FLAGS=[
+ ["Look-alike sender domain","Domaine d'expéditeur imitant la banque","The name says Meridian Bank, but the address belongs to meridian-bank-secure.example, a different domain. Display names are free to fake; the domain is what counts.","Le nom affiché est Meridian Bank, mais l'adresse appartient à meridian-bank-secure.example, un autre domaine. Un nom affiché peut être librement falsifié ; c'est le domaine qui compte."],
+ ["Urgency in the subject","Urgence dans l'objet","A deadline of 24 hours is designed to stop you from checking. Real banks rarely threaten closure by email.","Un délai de 24 heures vise à vous empêcher de vérifier. Une vraie banque menace rarement de fermer un compte par e-mail."],
+ ["Generic greeting","Formule d'appel générique","'Dear Customer' suggests a mass mailing. Your bank knows your name. (Spear phishing will use it, so a name alone proves nothing.)","« Cher client » trahit un envoi de masse. Votre banque connaît votre nom. (Le spear phishing, lui, l'utilise : un nom seul ne prouve rien.)"],
+ ["Threat and pressure","Menace et pression","Closure, frozen funds and 'immediately' are fear tactics. The message wants a reaction, not a decision.","Fermeture, fonds gelés et « immédiatement » jouent sur la peur. Le message cherche une réaction, pas une décision réfléchie."],
+ ["Spelling and tone errors","Fautes d'orthographe ou de ton","'Acount' is a typo. Mistakes are less common now that attackers use AI tools, so absence of typos is not a sign of safety.","« Compt » est une faute. Les fautes sont moins fréquentes depuis que les attaquants utilisent des outils d'IA : leur absence ne garantit pas la sécurité."],
+ ["Link that does not match","Lien qui ne correspond pas","The button leads to meridian-bank.secure-login.example. The registered domain there is secure-login.example, not the bank's. Always check the real destination before clicking.","Le bouton mène vers meridian-bank.secure-login.example. Le domaine enregistré est secure-login.example, pas celui de la banque. Vérifiez toujours la vraie destination avant de cliquer."],
+ ["Unexpected HTML attachment","Pièce jointe HTML inattendue","An .html file opens a fake login form on your own device and can skip some link scanners. Banks do not send forms as HTML attachments.","Un fichier .html ouvre une fausse page de connexion sur votre appareil et peut échapper à certains filtres de liens. Les banques n'envoient pas de formulaires en pièce jointe HTML."]
+];
+var URLS=[
+ ["https://www.meridian-bank.example/login",true,"The registered domain is meridian-bank.example, with the usual www subdomain.","Le domaine enregistré est meridian-bank.example, avec le sous-domaine habituel www."],
+ ["https://meridian-bank.example.secure-verify.example/login",false,"Read from the right. The registered domain is secure-verify.example; the bank's name is just a subdomain the attacker chose.","Lisez de droite à gauche. Le domaine enregistré est secure-verify.example ; le nom de la banque n'est qu'un sous-domaine choisi par l'attaquant."],
+ ["https://www.rneridian-bank.example/login",false,"'rn' imitates 'm'. Look-alike letters are one of the oldest tricks. Read slowly or type the address yourself.","« rn » imite « m ». Les caractères qui se ressemblent sont l'une des plus vieilles astuces. Lisez lentement ou saisissez vous-même l'adresse."],
+ ["https://login.meridian-bank.example/session",true,"login. is a subdomain of the real registered domain, so the bank controls it.","« login. » est un sous-domaine du vrai domaine enregistré, donc contrôlé par la banque."],
+ ["https://meridian-bank.example@203.0.113.9/login",false,"Everything before the @ is just a username. The browser actually goes to the number after it. Any @ in an address is a red flag.","Tout ce qui précède le @ n'est qu'un nom d'utilisateur. Le navigateur se rend en réalité à l'adresse numérique qui suit. Un @ dans une adresse est un signal d'alerte."],
+ ["https://meridian-bank.example-support.example/help",false,"The hyphen makes 'meridian-bank.example-support' one name; the registered domain is example-support.example, not the bank's.","Le tiret fait de « meridian-bank.example-support » un seul nom ; le domaine enregistré est example-support.example, pas celui de la banque."]
+];
+var TAC=[
+ ["Urgency","Urgence","Act now","Agissez vite","Your account will be closed in 24 hours.","Votre compte sera fermé dans 24 heures.","Deadlines remove time to verify.","Une échéance supprime le temps de vérifier.","Slow down on purpose. A real problem survives a five-minute check.","Ralentissez volontairement. Un vrai problème résiste à cinq minutes de vérification."],
+ ["Authority","Autorité","Boss, bank, police","Chef, banque, police","This is the CEO. Pay this invoice today, I am in a meeting.","Ici le PDG. Réglez cette facture aujourd'hui, je suis en réunion.","We tend to obey titles and uniforms without asking questions.","On obéit souvent aux titres et aux uniformes sans poser de questions.","Confirm through a known number or chat, never via the message itself.","Confirmez par un numéro ou une messagerie connus, jamais via le message lui-même."],
+ ["Fear","Peur","Threat","Menace","Unauthorized login from another country. Secure your account.","Connexion non autorisée depuis un autre pays. Sécurisez votre compte.","Fear narrows attention to the threat the attacker names.","La peur concentre l'attention sur la menace que l'attaquant désigne.","Go to the official app yourself and look for the alert there.","Allez vous-même dans l'application officielle et cherchez l'alerte."],
+ ["Reward","Appât du gain","Greed or luck","Gain ou chance","You won 100,000 FCFA. Confirm your number to claim.","Vous avez gagné 100 000 FCFA. Confirmez votre numéro pour les recevoir.","The prospect of a gain lowers suspicion.","La perspective d'un gain réduit la méfiance.","Prizes you did not enter for do not exist. Ignore and delete.","Un lot pour un jeu auquel vous n'avez pas participé n'existe pas. Ignorez et supprimez."],
+ ["Familiarity","Familiarité","Trusted name","Nom connu","Hi, it's Kofi from accounts. Here is the file we discussed.","Bonjour, c'est Kofi de la comptabilité. Voici le fichier dont nous avons parlé.","Known names and shared context feel safe.","Un nom connu et un contexte partagé inspirent confiance.","Accounts get hijacked. Ask in a different channel if the request is unusual.","Les comptes peuvent être piratés. Demandez par un autre canal si la demande est inhabituelle."],
+ ["Helpfulness","Entraide","Please help me","Aidez-moi","I sent money to you by mistake. Please send it back to this number.","Je vous ai envoyé de l'argent par erreur. Merci de le renvoyer à ce numéro.","Most people want to be kind, and attackers know it.","La plupart des gens veulent bien faire, et les attaquants le savent.","Check your balance through the official app or USSD code, not through the SMS.","Vérifiez votre solde via l'application officielle ou le code USSD, pas via le SMS."],
+ ["Curiosity","Curiosité","Hidden content","Contenu caché","Salary review 2026.xlsx, confidential.","Revue des salaires 2026.xlsx, confidentiel.","Private or forbidden information pulls us in.","Une information privée ou interdite attire.","Unexpected files stay closed. Ask the sender through another channel.","Un fichier inattendu reste fermé. Demandez à l'expéditeur par un autre canal."]
+];
+var HAB=[
+ ["Type or bookmark important addresses","Reach your bank, mobile money and work portals from your own bookmarks, not from message links.","Saisir ou mettre en favori les adresses importantes","Accédez à votre banque, au mobile money et aux portails professionnels depuis vos favoris, pas depuis les liens reçus."],
+ ["Check the real sender and link before acting","Expand the sender address, hover or long-press links, read the domain from the right.","Vérifier l'expéditeur réel et le lien avant d'agir","Développez l'adresse de l'expéditeur, survolez ou appuyez longuement sur les liens, lisez le domaine de droite à gauche."],
+ ["Never share one-time codes or PINs","No genuine bank, operator or IT team will ask you to read out a code.","Ne jamais partager un code à usage unique ou un PIN","Aucune vraie banque, aucun opérateur ni service informatique ne vous demandera de lire un code."],
+ ["Turn on multi-factor authentication everywhere it exists","Prefer an authenticator app or a security key over SMS codes when you can.","Activer l'authentification multifacteur partout où elle existe","Préférez une application d'authentification ou une clé de sécurité aux codes SMS quand c'est possible."],
+ ["Use a password manager and unique passwords","A manager also refuses to autofill on look-alike domains, which is a free warning.","Utiliser un gestionnaire de mots de passe et des mots de passe uniques","Un gestionnaire refuse aussi de remplir automatiquement sur un domaine imité, ce qui est une alerte gratuite."],
+ ["Deny unexpected approval prompts","If a login approval appears and you did not sign in, deny it and change your password.","Refuser les demandes d'approbation inattendues","Si une demande de connexion apparaît alors que vous ne vous êtes pas connecté, refusez-la et changez votre mot de passe."],
+ ["Verify payment and bank-detail changes out of band","Call a number you already had, never the one in the email.","Vérifier par un autre canal tout changement de paiement ou de coordonnées bancaires","Appelez un numéro que vous aviez déjà, jamais celui de l'e-mail."],
+ ["Be wary of attachments and QR codes","Treat unexpected .html, .zip, macro-enabled files and QR codes from strangers as hostile.","Se méfier des pièces jointes et des QR codes","Traitez comme hostiles les fichiers .html, .zip ou avec macros et les QR codes inattendus venant d'inconnus."],
+ ["Keep software and browsers updated","Updates close the holes that malicious attachments rely on.","Garder logiciels et navigateurs à jour","Les mises à jour comblent les failles sur lesquelles s'appuient les pièces jointes malveillantes."],
+ ["Report suspicious messages quickly","A fast report protects colleagues. Reporting never puts you in trouble.","Signaler rapidement les messages suspects","Un signalement rapide protège vos collègues. Signaler ne vous met jamais en faute."],
+ ["If you clicked or typed, act within minutes","Change the password from a clean device, tell IT, sign out other sessions, and watch for strange activity.","Si vous avez cliqué ou saisi des données, agir en quelques minutes","Changez le mot de passe depuis un appareil sain, prévenez l'informatique, déconnectez les autres sessions et surveillez toute activité étrange."]
+];
+var CASES=[
+ ["2013","Target retail breach","Fuite de données chez Target","Attackers reportedly stole network credentials from an HVAC contractor through a phishing email, then moved into Target's systems. About 40 million payment cards were exposed.","Des attaquants auraient volé des identifiants réseau d'un sous-traitant en climatisation par un e-mail de phishing, puis auraient pénétré les systèmes de Target. Environ 40 millions de cartes de paiement ont été exposées.","Your suppliers are part of your attack surface. Limit what vendor accounts can reach.","Vos fournisseurs font partie de votre surface d'attaque. Limitez ce que leurs comptes peuvent atteindre."],
+ ["2013–2015","Fake invoices, over $100 million","Fausses factures : plus de 100 millions de dollars","A man impersonated a hardware supplier and sent invoices to Facebook and Google, which paid over $100 million in total before it was caught. He later pleaded guilty.","Un homme s'est fait passer pour un fournisseur de matériel informatique et a envoyé des factures à Facebook et Google, qui ont versé plus de 100 millions de dollars au total avant que la fraude soit détectée. Il a plaidé coupable par la suite.","Verify any new or changed payment details with a known contact, even for familiar vendors.","Vérifiez tout nouveau changement de coordonnées de paiement auprès d'un contact connu, même pour des fournisseurs familiers."],
+ ["2016","Campaign email theft","Vol d'e-mails d'une campagne","A staff member of a US political campaign received a fake Google security alert with a shortened link. The entered password led to the leak of thousands of emails.","Un collaborateur d'une campagne politique américaine a reçu une fausse alerte de sécurité Google avec un lien raccourci. Le mot de passe saisi a conduit à la fuite de milliers d'e-mails.","Brand-perfect fear messages are convincing. Stay alert and use app-based or hardware multi-factor authentication.","Les messages de peur aux couleurs parfaites d'une marque sont très convaincants. Restez vigilant et activez une authentification multifacteur par application ou clé matérielle."],
+ ["2020","Twitter internal tools","Outils internes de Twitter","Attackers phoned employees posing as internal IT, collected credentials, and took over high-profile accounts to run a cryptocurrency scam.","Des attaquants ont téléphoné à des employés en se faisant passer pour le support informatique interne, ont obtenu des identifiants et ont pris le contrôle de comptes très suivis pour lancer une arnaque aux cryptomonnaies.","Phone calls are phishing too. Verify callers by calling back through an official number.","Les appels téléphoniques sont aussi du phishing. Vérifiez l'appelant en le rappelant via un numéro officiel."],
+ ["2022","Uber MFA fatigue","Uber et la fatigue MFA","An attacker with a contractor's password sent repeated login approvals, then messaged on WhatsApp pretending to be IT and asked the person to accept one.","Un attaquant disposant du mot de passe d'un prestataire a envoyé de multiples demandes d'approbation de connexion, puis a écrit sur WhatsApp en se faisant passer pour le support informatique pour demander d'en accepter une.","Never approve a prompt you did not start, however polite the person asking.","N'approuvez jamais une demande que vous n'avez pas initiée, quelle que soit la politesse de la personne."],
+ ["2023","Casino help-desk call","Appel au support d'un groupe de casinos","Attackers reportedly called the IT help desk of a casino group posing as an employee found online and obtained access, causing days of disruption.","Des attaquants auraient appelé le support informatique d'un groupe de casinos en se faisant passer pour un employé trouvé en ligne, et auraient obtenu un accès, causant plusieurs jours de perturbations.","Help desks need strong identity checks. A name from LinkedIn is not proof.","Les services d'assistance ont besoin de contrôles d'identité solides. Un nom trouvé sur LinkedIn ne prouve rien."]
+];
+
+/* Q(question EN, question FR, ['EN|FR' x4], correct index, explanation EN, explanation FR) */
+function Q(qe,qf,o,a,ee,ef){return {q:[qe,qf],o:o.map(function(s){return s.split("|")}),a:a,e:[ee,ef]}}
+
+var MQ=[
+Q("An email from 'IT Helpdesk' says your mailbox is full and you must log in within one hour using the link inside. What is your best first move?","Un e-mail du « Support informatique » indique que votre boîte est pleine et que vous devez vous connecter dans l'heure via le lien fourni. Quelle est la meilleure première réaction ?",
+ ["Click quickly before the mailbox locks|Cliquer vite avant le blocage de la boîte","Reply and ask them to confirm the link is safe|Répondre pour demander de confirmer que le lien est sûr","Open the company portal from your bookmark, or call IT on a number you already have|Ouvrir le portail de l'entreprise depuis vos favoris, ou appeler l'informatique sur un numéro que vous possédez déjà","Forward it to colleagues so they can check|Le transférer à des collègues pour qu'ils vérifient"],2,
+ "Do not use the message to verify itself. Go to the real portal yourself, or call a known number, and report the email.","Ne laissez pas le message se vérifier lui-même. Rendez-vous vous-même sur le vrai portail ou appelez un numéro connu, puis signalez l'e-mail."),
+Q("The real domain of Meridian Bank is meridian-bank.example. Which address belongs to the bank?","Le vrai domaine de Meridian Bank est meridian-bank.example. Quelle adresse appartient à la banque ?",
+ ["meridian-bank.example.account-help.example|meridian-bank.example.account-help.example","login.meridian-bank.example|login.meridian-bank.example","meridian-bank-support.example|meridian-bank-support.example","meridian-bank.example@198.51.100.4|meridian-bank.example@198.51.100.4"],1,
+ "A subdomain of the real registered domain is controlled by the bank. The other three have a different registered domain or hide the real destination behind an @.","Un sous-domaine du vrai domaine enregistré est contrôlé par la banque. Les trois autres ont un autre domaine enregistré ou cachent la vraie destination derrière un @."),
+Q("You get an SMS: 'You received 50,000 FCFA by mistake, please send it back to this number.' What is happening and what should you do?","Vous recevez un SMS : « Vous avez reçu 50 000 FCFA par erreur, merci de les renvoyer à ce numéro. » Que se passe-t-il et que faire ?",
+ ["Probably a real mistake. Send the money back.|Probablement une vraie erreur. Renvoyer l'argent.","A pretext that plays on kindness. Check your balance in the official app or USSD menu, send nothing, and report it to your operator.|Un prétexte qui joue sur la gentillesse. Vérifiez votre solde dans l'appli officielle ou le menu USSD, n'envoyez rien et signalez-le à votre opérateur.","A bank notification. Reply with your PIN to confirm.|Une notification bancaire. Répondre avec votre PIN pour confirmer.","Harmless. Ignore it, then call the number if it texts again.|Sans danger. L'ignorer, puis appeler le numéro s'il réécrit."],1,
+ "Fake credit alerts are forged messages. The real balance is only visible through the operator's own channel. Never share your PIN.","Les fausses alertes de crédit sont des messages falsifiés. Le vrai solde n'est visible que via le canal officiel de l'opérateur. Ne partagez jamais votre PIN."),
+Q("What best describes spear phishing?","Qu'est-ce qui décrit le mieux le spear phishing ?",
+ ["A mass email sent to random addresses|Un e-mail de masse envoyé à des adresses au hasard","A targeted message using details about one person or organization|Un message ciblé qui utilise des détails sur une personne ou une organisation","A virus that spreads through USB drives|Un virus qui se propage par clés USB","A fake antivirus pop-up|Une fausse fenêtre d'antivirus"],1,
+ "Spear phishing is personalized using real names, roles and context, which makes it more convincing than bulk phishing.","Le spear phishing est personnalisé avec de vrais noms, fonctions et contextes, ce qui le rend plus convaincant que le phishing de masse."),
+Q("Your phone shows three login approval prompts you did not trigger. Shortly after, someone on chat says they are from IT and asks you to accept one. What do you do?","Votre téléphone affiche trois demandes d'approbation de connexion que vous n'avez pas déclenchées. Peu après, quelqu'un se disant du support informatique vous demande d'en accepter une. Que faites-vous ?",
+ ["Accept it to stop the notifications|L'accepter pour arrêter les notifications","Accept one, then change your password|En accepter une, puis changer votre mot de passe","Deny all prompts, change your password and report it right away|Tout refuser, changer votre mot de passe et signaler immédiatement","Ignore it and wait to see if it stops|Ignorer et attendre que cela s'arrête"],2,
+ "This is MFA fatigue combined with impersonation. Someone already has your password. Deny, change it, and alert security.","C'est de la fatigue MFA combinée à une usurpation d'identité. Quelqu'un a déjà votre mot de passe. Refusez, changez-le et alertez la sécurité."),
+Q("A caller says they are from your bank's fraud team and asks you to read out the six-digit code you just received by SMS. You should:","Un appelant se dit de l'équipe antifraude de votre banque et vous demande de lire le code à six chiffres reçu par SMS. Vous devez :",
+ ["Read it out. They called you, so it must be official.|Le lire. Ils vous ont appelé, donc c'est officiel.","Read half of it for safety|Lire seulement la moitié par prudence","Hang up and call the number printed on your card or on the official site|Raccrocher et appeler le numéro imprimé sur votre carte ou sur le site officiel","Ask them to send an email, then read it out|Leur demander un e-mail, puis le lire"],2,
+ "That code is the key to your account. Genuine staff never ask for it. Ending the call and phoning the official number is the only safe check.","Ce code est la clé de votre compte. Le vrai personnel ne le demande jamais. Raccrocher et appeler le numéro officiel est la seule vérification sûre."),
+Q("An unknown supplier emails 'invoice_4471.html' asking for urgent payment. What is the safest action?","Un fournisseur inconnu vous envoie « facture_4471.html » en demandant un paiement urgent. Quelle est l'action la plus sûre ?",
+ ["Open it in a private browser window|L'ouvrir dans une fenêtre de navigation privée","Open it only on your phone|L'ouvrir uniquement sur votre téléphone","Do not open it, and report it to IT or security|Ne pas l'ouvrir et le signaler à l'informatique ou à la sécurité","Run an antivirus scan, then open it|Lancer un antivirus, puis l'ouvrir"],2,
+ "HTML attachments are a common way to deliver fake login pages. Report it. Do not rely on your own scan to make it safe.","Les pièces jointes HTML servent souvent à livrer de fausses pages de connexion. Signalez-la. Ne comptez pas sur votre propre analyse pour la rendre sûre."),
+Q("You clicked a link and typed your password into a page that now looks odd. What should you do first?","Vous avez cliqué sur un lien et saisi votre mot de passe sur une page qui paraît maintenant étrange. Que faire en premier ?",
+ ["Nothing. Passwords can be reset later.|Rien. On pourra réinitialiser le mot de passe plus tard.","Change the password from a trusted device, tell IT, sign out other sessions and check for unusual activity|Changer le mot de passe depuis un appareil de confiance, prévenir l'informatique, déconnecter les autres sessions et vérifier toute activité inhabituelle","Delete the email and hope it was nothing|Supprimer l'e-mail en espérant que ce n'était rien","Change only the last character of your password|Ne changer que le dernier caractère du mot de passe"],1,
+ "Speed limits the damage. Change the password, report, check connected accounts, and change any other account that reused it.","La rapidité limite les dégâts. Changez le mot de passe, signalez, vérifiez les comptes liés et changez tout autre compte qui l'utilisait."),
+Q("A colleague emails 'Salary review 2026.xlsx, confidential, open quickly'. You were not expecting it. What do you do?","Un collègue vous écrit « Revue des salaires 2026.xlsx, confidentiel, ouvrez vite ». Vous ne l'attendiez pas. Que faites-vous ?",
+ ["Open it, curiosity wins|L'ouvrir, la curiosité l'emporte","Ask the colleague through another channel whether they sent it, and report it if they did not|Demander au collègue par un autre canal s'il l'a envoyé, et le signaler s'il ne l'a pas fait","Forward it to your team|Le transférer à votre équipe","Open it on your phone instead|L'ouvrir plutôt sur votre téléphone"],1,
+ "Curiosity plus urgency is a classic combination, and the colleague's account may be hijacked. Confirm through another channel before opening.","Curiosité plus urgence est une combinaison classique, et le compte du collègue peut être piraté. Confirmez par un autre canal avant d'ouvrir."),
+Q("A poster in the street shows a QR code and says 'Scan to claim your reward, log in with your mobile-money account'. What is the best action?","Une affiche dans la rue montre un QR code : « Scannez pour recevoir votre récompense, connectez-vous avec votre compte mobile money ». Quelle est la meilleure action ?",
+ ["Scan it and log in|Le scanner et se connecter","Skip it. Rewards that ask for your login are a scam, and QR codes can hide the real address|L'ignorer. Les récompenses qui demandent vos identifiants sont des arnaques, et un QR code peut cacher la vraie adresse","Scan it but enter a different PIN|Le scanner mais saisir un autre PIN","Take a photo and share it with friends|Le photographier et le partager avec des amis"],1,
+ "This is quishing. You cannot see where a QR code leads until after scanning, and no real reward needs your mobile-money login.","C'est du quishing. On ne voit pas où mène un QR code avant de le scanner, et aucune vraie récompense ne nécessite vos identifiants de mobile money.")
+];
+
+var GQ=[
+/* Emails */
+Q("Which part of an email address shows who really sent it?","Quelle partie d'une adresse e-mail montre qui l'a réellement envoyé ?",["The display name|Le nom affiché","The domain after the @|Le domaine après le @","The subject line|L'objet","The signature|La signature"],1,"The display name is free text anyone can set. The domain after the @ is the better clue, though it can still be spoofed, so combine it with other checks.","Le nom affiché est un texte libre que chacun peut régler. Le domaine après le @ est un meilleur indice, bien qu'il puisse aussi être falsifié : combinez-le avec d'autres vérifications."),
+Q("An email greets you by your correct name and mentions your real manager. Does that prove it is genuine?","Un e-mail vous salue par votre vrai nom et cite votre vrai responsable. Cela prouve-t-il qu'il est authentique ?",["Yes, only insiders know that|Oui, seuls les initiés le savent","No, attackers collect names and roles from public profiles|Non, les attaquants collectent noms et rôles sur des profils publics","Yes, if it has a company logo|Oui, s'il a le logo de l'entreprise","Only if sent during work hours|Seulement s'il est envoyé aux heures de bureau"],1,"Names, titles and reporting lines are often public or leaked. Personal details make a message convincing, not trustworthy.","Noms, fonctions et lignes hiérarchiques sont souvent publics ou ont fuité. Des détails personnels rendent un message convaincant, pas fiable."),
+Q("Which request in an email should always trigger extra verification?","Quelle demande dans un e-mail doit toujours déclencher une vérification supplémentaire ?",["A newsletter you subscribed to|Une newsletter à laquelle vous êtes abonné","A change of bank details on an invoice|Un changement de coordonnées bancaires sur une facture","A meeting invite already in your calendar|Une invitation à une réunion déjà dans votre agenda","An automatic out-of-office reply|Une réponse d'absence automatique"],1,"Changed payment details are the core of invoice fraud. Confirm them by phone on a number you already hold.","Un changement de coordonnées de paiement est au cœur de la fraude à la facture. Confirmez-le par téléphone sur un numéro que vous possédez déjà."),
+Q("The Reply-To address of an email differs from its From address. What does this suggest?","L'adresse de réponse (Reply-To) d'un e-mail diffère de l'adresse d'expéditeur. Que cela suggère-t-il ?",["Nothing, it is never worth checking|Rien, cela ne vaut jamais la peine d'être vérifié","Replies may go to someone other than the apparent sender, so look closer|Les réponses peuvent aller à quelqu'un d'autre que l'expéditeur apparent : regardez de plus près","The email is encrypted|L'e-mail est chiffré","The email was sent twice|L'e-mail a été envoyé deux fois"],1,"Legitimate tools sometimes do this, but it is a classic way to redirect replies to an attacker. Treat it as a reason to verify.","Des outils légitimes le font parfois, mais c'est une méthode classique pour rediriger les réponses vers un attaquant. C'est une raison de vérifier."),
+Q("A message says 'Your parcel is held. Pay a 500 FCFA customs fee' with a link. What is the first step?","Un message dit : « Votre colis est bloqué. Payez 500 FCFA de frais de douane » avec un lien. Quelle est la première étape ?",["Pay it, the amount is small|Payer, le montant est faible","Check the tracking on the carrier's official site or app, not through the link|Vérifier le suivi sur le site ou l'appli officiels du transporteur, pas via le lien","Reply STOP|Répondre STOP","Forward it to friends|Le transférer à des amis"],1,"Small amounts lower your guard, and the real goal is your card or mobile-money details. Use the official tracking instead.","Les petits montants baissent la garde, et le vrai but est vos données de carte ou de mobile money. Utilisez plutôt le suivi officiel."),
+Q("Which attachment is the riskiest from an unknown sender?","Quelle pièce jointe est la plus risquée venant d'un inconnu ?",["A plain text note|Une note en texte brut","An .html or .zip file you are told to open|Un fichier .html ou .zip qu'on vous demande d'ouvrir","A small signature image|Une petite image de signature","A calendar reminder|Un rappel d'agenda"],1,"HTML pages and archives can hide fake login pages or malware. Any unexpected attachment deserves caution.","Les pages HTML et les archives peuvent cacher de fausses pages de connexion ou des logiciels malveillants. Toute pièce jointe inattendue appelle à la prudence."),
+Q("You receive a password-reset email you did not request. What is the best action?","Vous recevez un e-mail de réinitialisation de mot de passe que vous n'avez pas demandé. Quelle est la meilleure action ?",["Click the link to cancel it|Cliquer sur le lien pour l'annuler","Do not use the link; check your account directly for unusual activity|Ne pas utiliser le lien ; vérifier directement votre compte à la recherche d'activité inhabituelle","Reply with your old password|Répondre avec votre ancien mot de passe","Forward it to the address inside it|Le transférer à l'adresse indiquée dedans"],1,"The email may be a trap, or a real sign someone is trying your account. Go to the official site yourself and review recent activity.","L'e-mail peut être un piège, ou le signe réel que quelqu'un essaie votre compte. Allez vous-même sur le site officiel et examinez l'activité récente."),
+Q("Which statement about spotting phishing is true?","Quelle affirmation sur la détection du phishing est vraie ?",["A perfectly written email must be safe|Un e-mail parfaitement rédigé est forcément sûr","Typos are the only sign to watch for|Les fautes sont le seul signe à surveiller","No single sign is enough, so check sender, link and request together|Aucun signe isolé ne suffit : vérifiez ensemble l'expéditeur, le lien et la demande","Emails with logos are safe|Les e-mails avec logo sont sûrs"],2,"Polished writing and logos are easy to copy. Combine several checks rather than relying on one clue.","Une rédaction soignée et des logos se copient facilement. Combinez plusieurs vérifications au lieu de vous fier à un seul indice."),
+/* URLs */
+Q("In https://account.verify-meridian.example/login, which part is the registered domain?","Dans https://account.verify-meridian.example/login, quelle partie est le domaine enregistré ?",["account|account","verify-meridian.example|verify-meridian.example","meridian|meridian","https|https"],1,"The registered domain is the name before the final ending, here verify-meridian.example. 'account.' is just a subdomain.","Le domaine enregistré est le nom avant la terminaison finale, ici verify-meridian.example. « account. » n'est qu'un sous-domaine."),
+Q("What is the safest way to reach your bank online?","Quelle est la façon la plus sûre d'accéder à votre banque en ligne ?",["Click the link in an SMS|Cliquer sur le lien d'un SMS","Click a search ad at the top of the results|Cliquer sur une annonce en tête des résultats","Use the official app or your own bookmark|Utiliser l'application officielle ou votre propre favori","Open a link a colleague forwarded|Ouvrir un lien transféré par un collègue"],2,"Attackers buy ads and send links. Your own bookmark or the official app skips that risk.","Les attaquants achètent des annonces et envoient des liens. Votre favori ou l'appli officielle évite ce risque."),
+Q("What does the padlock icon in the browser guarantee?","Que garantit le cadenas dans le navigateur ?",["The site belongs to your bank|Le site appartient à votre banque","The connection is encrypted, not that the site is honest|La connexion est chiffrée, pas que le site est honnête","The site has no malware|Le site ne contient aucun logiciel malveillant","The link came from a safe sender|Le lien vient d'un expéditeur sûr"],1,"Encryption protects data in transit, even to a criminal's site. Always check the domain itself.","Le chiffrement protège les données en transit, même vers le site d'un criminel. Vérifiez toujours le domaine lui-même."),
+Q("Real domain: northwind-pay.example. Which address uses a look-alike character trick?","Domaine réel : northwind-pay.example. Quelle adresse utilise des caractères qui se ressemblent ?",["northwind-pay.example|northwind-pay.example","northvvind-pay.example|northvvind-pay.example","pay.northwind-pay.example|pay.northwind-pay.example","www.northwind-pay.example|www.northwind-pay.example"],1,"'vv' imitates 'w'. Slow down and read letter by letter, or use a bookmark.","« vv » imite « w ». Ralentissez et lisez lettre par lettre, ou utilisez un favori."),
+Q("A login window pops up inside another website asking for your account password. What should you do?","Une fenêtre de connexion s'affiche à l'intérieur d'un autre site et demande votre mot de passe. Que faire ?",["Enter it, the pop-up looks official|La saisir, la fenêtre a l'air officielle","Close it and sign in from the official site or app directly|La fermer et vous connecter directement depuis le site ou l'appli officiels","Enter a fake password first|Saisir d'abord un faux mot de passe","Take a screenshot and share it|Faire une capture d'écran et la partager"],1,"Pop-ups can imitate real login windows perfectly. Sign in only from a page you opened yourself.","Les pop-ups peuvent imiter parfaitement de vraies fenêtres de connexion. Ne vous connectez que depuis une page ouverte par vous-même."),
+Q("Your password manager does not offer to fill in a login on a site that looks like your bank. What does this suggest?","Votre gestionnaire de mots de passe ne propose pas de remplir la connexion sur un site qui ressemble à votre banque. Que cela suggère-t-il ?",["The manager is broken|Le gestionnaire est en panne","The domain may not match the saved one, so be suspicious|Le domaine ne correspond peut-être pas à celui enregistré : méfiance","Your password is too long|Votre mot de passe est trop long","The site is faster than usual|Le site est plus rapide que d'habitude"],1,"Managers match the exact domain. No autofill on a familiar-looking page is a free warning.","Les gestionnaires vérifient le domaine exact. L'absence de remplissage sur une page familière est une alerte gratuite."),
+Q("A shortened link arrives in an unexpected message. What is a safe approach?","Un lien raccourci arrive dans un message inattendu. Quelle approche est sûre ?",["Click, then check the page|Cliquer, puis vérifier la page","Use a link-preview tool, or skip the link and go to the official site|Utiliser un outil d'aperçu du lien, ou l'ignorer et aller sur le site officiel","Share it to ask friends|Le partager pour demander à des amis","Open it on another device|L'ouvrir sur un autre appareil"],1,"Short links hide the destination. Preview them, or never use them to log in or pay.","Les liens courts cachent la destination. Prévisualisez-les, ou ne les utilisez jamais pour vous connecter ou payer."),
+/* SMS and calls */
+Q("A caller says your SIM will be blocked unless you confirm your PIN. What is this?","Un appelant dit que votre SIM sera bloquée si vous ne confirmez pas votre PIN. De quoi s'agit-il ?",["A routine operator check|Un contrôle opérateur de routine","Vishing, a phone-based phishing attempt|Du vishing, une tentative d'hameçonnage par téléphone","A software update|Une mise à jour logicielle","A lottery|Une loterie"],1,"Operators do not ask for your PIN. End the call and contact them through the official number.","Les opérateurs ne demandent pas votre PIN. Raccrochez et contactez-les via le numéro officiel."),
+Q("An SMS says a mobile-money transfer was received and asks you to call a number to 'confirm'. Best action?","Un SMS indique qu'un transfert mobile money a été reçu et demande d'appeler un numéro pour « confirmer ». Meilleure action ?",["Call to confirm|Appeler pour confirmer","Check your balance and history in the official app or USSD menu|Vérifier votre solde et votre historique dans l'appli officielle ou le menu USSD","Send a small test amount|Envoyer un petit montant test","Reply with your ID number|Répondre avec votre numéro de pièce d'identité"],1,"Fake credit alerts are common. Only the official channel shows what really arrived.","Les fausses alertes de crédit sont courantes. Seul le canal officiel montre ce qui est réellement arrivé."),
+Q("A caller from 'bank fraud' says they already see the attacker. Which move is safest?","Un appelant du « service fraude de la banque » dit qu'il voit déjà l'attaquant. Quelle réaction est la plus sûre ?",["Stay on the line and follow their steps|Rester en ligne et suivre leurs consignes","Hang up and call the number on your card or the official site|Raccrocher et appeler le numéro de votre carte ou du site officiel","Ask them to name your last transaction as proof|Leur demander de citer votre dernière transaction comme preuve","Move money to the 'safe account' they give|Transférer l'argent vers le « compte sûr » qu'ils donnent"],1,"Callers may know some of your details. Never move money to a 'safe account'; call back on an official number.","Les appelants peuvent connaître certains de vos détails. Ne transférez jamais d'argent vers un « compte sûr » ; rappelez sur un numéro officiel."),
+Q("Which text is typical of smishing?","Quel texte est typique du smishing ?",["'Your verification code is 482913. Do not share it.' (you just requested one)|« Votre code de vérification est 482913. Ne le partagez pas. » (vous venez d'en demander un)","'Your account is locked. Restore access now: bit.example/x7'|« Votre compte est bloqué. Rétablissez l'accès maintenant : bit.example/x7 »","'Meeting moved to 3 pm'|« Réunion déplacée à 15 h »","'Happy birthday!'|« Joyeux anniversaire ! »"],1,"A lock notice with a short link and a rush to act is the classic pattern.","Un avis de blocage avec un lien court et une pression pour agir est le schéma classique."),
+Q("A caller from 'IT support' asks you to install a remote-control app to fix a problem. You never contacted IT. What do you do?","Un appelant du « support informatique » vous demande d'installer une appli de contrôle à distance. Vous n'avez jamais contacté l'informatique. Que faites-vous ?",["Install it, they sound professional|L'installer, ils semblent professionnels","Decline, hang up, and contact IT through the official channel|Refuser, raccrocher et contacter l'informatique par le canal officiel","Install it but withhold your password|L'installer mais ne pas donner votre mot de passe","Ask them to call back later, then comply|Leur demander de rappeler plus tard, puis obéir"],1,"Remote-control tools give full access to your device. Only use them with support you contacted yourself.","Les outils de contrôle à distance donnent un accès complet à votre appareil. Ne les utilisez qu'avec un support que vous avez contacté vous-même."),
+Q("Why is caller ID not proof of who is calling?","Pourquoi l'affichage du numéro n'est-il pas une preuve de l'identité de l'appelant ?",["It is always accurate|Il est toujours exact","Numbers can be spoofed to show a trusted name|Les numéros peuvent être falsifiés pour afficher un nom de confiance","It only works on landlines|Il ne marche que sur les fixes","It is encrypted|Il est chiffré"],1,"Spoofing tools can show any number. Call back through a number you look up yourself.","Des outils de falsification peuvent afficher n'importe quel numéro. Rappelez via un numéro que vous trouvez vous-même."),
+Q("A WhatsApp message from an unknown number says: 'Hi Mum, this is my new number, I urgently need money.' Best action?","Un message WhatsApp d'un numéro inconnu dit : « Coucou maman, c'est mon nouveau numéro, j'ai besoin d'argent d'urgence. » Meilleure action ?",["Send the money, it is family|Envoyer l'argent, c'est la famille","Call your child on the number you already have before doing anything|Appeler votre enfant sur le numéro que vous avez déjà avant toute chose","Ask for their bank details and pay|Demander ses coordonnées bancaires et payer","Block your real family members|Bloquer vos vrais proches"],1,"Family impersonation relies on panic. A call to the known number settles it in a minute.","L'usurpation de proche repose sur la panique. Un appel au numéro connu règle la question en une minute."),
+/* Social engineering */
+Q("What is pretexting?","Qu'est-ce que le pretexting (prétexte) ?",["Sending bulk spam|Envoyer du spam en masse","Inventing a believable scenario to gain trust and information|Inventer un scénario crédible pour gagner la confiance et obtenir des informations","Encrypting files for ransom|Chiffrer des fichiers contre rançon","Guessing passwords by trial|Deviner des mots de passe par essais"],1,"The pretext is the story: an auditor, a new hire, a supplier. It makes the request seem normal.","Le prétexte est l'histoire : un auditeur, un nouvel embauché, un fournisseur. Il rend la demande normale."),
+Q("A stranger in the lobby asks you to hold the door because they 'forgot their badge'. What is this technique called?","Un inconnu dans le hall vous demande de tenir la porte car il a « oublié son badge ». Comment appelle-t-on cette technique ?",["Tailgating, a physical social engineering technique|Le tailgating, une technique d'ingénierie sociale physique","Smishing|Le smishing","Spoofing|Le spoofing","Ransomware|Le rançongiciel"],0,"Social engineering is not only online. Politely direct the person to reception.","L'ingénierie sociale n'est pas que numérique. Orientez poliment la personne vers l'accueil."),
+Q("Which feeling do attackers often trigger so you act without checking?","Quelle émotion les attaquants déclenchent-ils souvent pour que vous agissiez sans vérifier ?",["Calm|Le calme","Urgency or fear|L'urgence ou la peur","Boredom|L'ennui","Sleepiness|La somnolence"],1,"Strong emotions cut thinking time. If a message rushes you, that is the moment to pause.","Les émotions fortes réduisent le temps de réflexion. Si un message vous presse, c'est le moment de faire une pause."),
+Q("A USB drive labeled 'Salaries 2026' is left in the car park. What is the right action?","Une clé USB étiquetée « Salaires 2026 » traîne sur le parking. Quelle est la bonne action ?",["Plug it in to find the owner|La brancher pour trouver son propriétaire","Hand it to IT or security without plugging it in|La remettre à l'informatique ou à la sécurité sans la brancher","Take it home|L'emporter chez vous","Plug it into a spare laptop|La brancher sur un ordinateur de rechange"],1,"This is baiting: curiosity is the hook. Unknown drives can run malware as soon as they are plugged in.","C'est de l'appât (baiting) : la curiosité est l'hameçon. Une clé inconnue peut exécuter un logiciel malveillant dès qu'elle est branchée."),
+Q("'Everyone else on your team has already completed this verification.' Which persuasion principle is this?","« Tous les autres de votre équipe ont déjà fait cette vérification. » Quel principe de persuasion est utilisé ?",["Social proof|La preuve sociale","Scarcity|La rareté","Reciprocity|La réciprocité","Authority|L'autorité"],0,"We follow what others do. Ask the team directly through a trusted channel.","Nous suivons ce que font les autres. Demandez directement à l'équipe par un canal de confiance."),
+Q("A 'recruiter' sends a job offer and asks you to download a skills test from a personal link. What is the risk?","Un « recruteur » envoie une offre d'emploi et vous demande de télécharger un test de compétences depuis un lien personnel. Quel est le risque ?",["None, recruiters are trusted|Aucun, les recruteurs sont dignes de confiance","The file may carry malware, and the offer may be a pretext|Le fichier peut contenir un logiciel malveillant, et l'offre peut être un prétexte","The test will be too hard|Le test sera trop difficile","Your CV becomes public|Votre CV devient public"],1,"Fake job offers are a common route to malware. Verify the company and recruiter on official sites first.","Les fausses offres d'emploi sont une voie fréquente vers les logiciels malveillants. Vérifiez d'abord l'entreprise et le recruteur sur des sites officiels."),
+/* Good practices */
+Q("Which second factor is generally the strongest against phishing?","Quel second facteur résiste généralement le mieux au phishing ?",["SMS code|Code par SMS","Security key (FIDO2)|Clé de sécurité (FIDO2)","Security question|Question secrète","Email code|Code par e-mail"],1,"Security keys only answer the real website, so a fake page cannot reuse them. SMS and email codes can be handed over.","Les clés de sécurité ne répondent qu'au vrai site, une fausse page ne peut donc pas les réutiliser. Les codes SMS et e-mail peuvent être livrés à un attaquant."),
+Q("Why use a different password for each account?","Pourquoi utiliser un mot de passe différent pour chaque compte ?",["To make logins slower|Pour ralentir les connexions","So one breach does not unlock your other accounts|Pour qu'une fuite ne donne pas accès à vos autres comptes","Because the law requires it|Parce que la loi l'exige","To avoid using MFA|Pour éviter l'authentification multifacteur"],1,"Attackers try stolen passwords on other sites. Unique passwords stop one leak from spreading.","Les attaquants testent les mots de passe volés sur d'autres sites. Des mots de passe uniques empêchent une fuite de se propager."),
+Q("What makes a strong passphrase?","Qu'est-ce qui fait une bonne phrase de passe ?",["Your birthday and pet's name|Votre date de naissance et le nom de votre animal","Several random words, long and unique|Plusieurs mots aléatoires, longue et unique","The word 'password' with a 1 at the end|Le mot « motdepasse » suivi d'un 1","Your phone number|Votre numéro de téléphone"],1,"Length and randomness matter most. A password manager can create and store it for you.","La longueur et le hasard comptent le plus. Un gestionnaire de mots de passe peut la créer et la stocker."),
+Q("When should you share your MFA code with support staff?","Quand devez-vous partager votre code MFA avec le personnel de support ?",["Whenever they ask|Chaque fois qu'ils le demandent","Never|Jamais","Only by phone|Seulement par téléphone","Only if they know your name|Seulement s'ils connaissent votre nom"],1,"Codes are for you alone. Anyone asking for one is trying to log in as you.","Les codes sont pour vous seul. Quiconque en demande un essaie de se connecter à votre place."),
+Q("Before entering card details on an unknown shopping site, what is the wisest step?","Avant de saisir vos données de carte sur un site marchand inconnu, quelle est l'étape la plus sage ?",["Check only for a padlock|Vérifier uniquement la présence du cadenas","Look for independent reviews and a verifiable business, and prefer payment with buyer protection|Chercher des avis indépendants et une entreprise vérifiable, et privilégier un paiement avec protection de l'acheteur","Trust the low price|Se fier au prix bas","Enter details to see the final price|Saisir ses données pour voir le prix final"],1,"Fake shops copy real ones and use bargain prices as bait. Independent checks beat appearances.","Les faux sites marchands copient les vrais et utilisent des prix cassés comme appât. Les vérifications indépendantes valent mieux que les apparences."),
+Q("Why keep your phone and browser updated?","Pourquoi garder votre téléphone et votre navigateur à jour ?",["To get new emojis|Pour avoir de nouveaux émojis","Updates fix security holes that malicious pages and files exploit|Les mises à jour corrigent des failles exploitées par des pages et fichiers malveillants","It uses less data|Cela consomme moins de données","It blocks all phishing|Cela bloque tout le phishing"],1,"Updates close known holes, but they do not replace your own vigilance.","Les mises à jour comblent des failles connues, mais ne remplacent pas votre propre vigilance."),
+Q("Which habit is wisest for sensitive logins on public Wi-Fi in a café?","Quelle habitude est la plus sage pour des connexions sensibles sur le Wi-Fi public d'un café ?",["Use it freely, https protects everything|L'utiliser librement, https protège tout","Avoid sensitive logins on it, or use a trusted VPN or mobile data|Éviter les connexions sensibles dessus, ou utiliser un VPN de confiance ou les données mobiles","Share the Wi-Fi password with others|Partager le mot de passe du Wi-Fi","Turn off your screen|Éteindre votre écran"],1,"Fake hotspots and fake login pages are easier to set up on open networks. Mobile data is safer.","Les faux points d'accès et les fausses pages de connexion sont plus faciles à mettre en place sur des réseaux ouverts. Les données mobiles sont plus sûres."),
+Q("What is the benefit of using a 'report phishing' button or channel?","Quel est l'intérêt d'un bouton ou canal « signaler un phishing » ?",["It deletes the email for everyone automatically|Il supprime automatiquement l'e-mail pour tout le monde","It lets security block the attack and warn others quickly|Il permet à l'équipe sécurité de bloquer l'attaque et d'avertir les autres rapidement","It punishes the sender|Il punit l'expéditeur","It slows down email|Il ralentit la messagerie"],1,"One report can protect the whole organization. Fast reporting is a strength, not an admission of failure.","Un signalement peut protéger toute l'organisation. Signaler vite est une force, pas un aveu d'échec."),
+/* Incident response */
+Q("You opened a suspicious attachment and nothing visible happened. What next?","Vous avez ouvert une pièce jointe suspecte et rien de visible ne s'est passé. Et maintenant ?",["Nothing, no visible effect|Rien, aucun effet visible","Disconnect from the network if advised, and report to IT immediately|Vous déconnecter du réseau si on vous le conseille et signaler immédiatement à l'informatique","Delete the file and stay quiet|Supprimer le fichier et ne rien dire","Restart and keep working|Redémarrer et continuer à travailler"],1,"Malware is often silent. Early reporting limits the damage.","Un logiciel malveillant est souvent silencieux. Un signalement précoce limite les dégâts."),
+Q("You typed your password on a fake page and reuse it on other accounts. What do you do?","Vous avez saisi votre mot de passe sur une fausse page et vous le réutilisez sur d'autres comptes. Que faites-vous ?",["Change it on every account where you reused it|Le changer sur tous les comptes où vous l'avez réutilisé","Change only the email password|Ne changer que le mot de passe de la messagerie","Wait a week|Attendre une semaine","Delete the fake page's email|Supprimer l'e-mail de la fausse page"],0,"Attackers try the stolen password everywhere. Change each reused one, preferably with MFA on.","Les attaquants essaient le mot de passe volé partout. Changez chaque compte concerné, de préférence en activant la MFA."),
+Q("You sent money to a fraudster. How fast should you contact your bank?","Vous avez envoyé de l'argent à un fraudeur. Dans quel délai contacter votre banque ?",["As soon as possible, because early reports can sometimes stop transfers|Dès que possible, car un signalement rapide peut parfois bloquer le virement","After a month|Après un mois","Only if they contact you|Seulement s'ils vous contactent","Never, it is hopeless|Jamais, c'est sans espoir"],0,"Minutes and hours matter. Banks and operators can sometimes freeze or recall payments if told quickly.","Les minutes et les heures comptent. Les banques et opérateurs peuvent parfois bloquer ou rappeler un paiement s'ils sont prévenus vite."),
+Q("Why report a phishing attempt even if you did not click?","Pourquoi signaler une tentative de phishing même si vous n'avez pas cliqué ?",["It is a legal requirement for everyone|C'est une obligation légale pour tous","Others may have received it, and security can block the sender|D'autres l'ont peut-être reçu et la sécurité peut bloquer l'expéditeur","It earns a prize|Cela fait gagner un prix","It deletes your inbox|Cela vide votre boîte de réception"],1,"The same message usually reaches many people. Your report protects the ones who might click.","Le même message atteint généralement beaucoup de monde. Votre signalement protège ceux qui pourraient cliquer."),
+Q("After a suspected account compromise, what should you check in your email settings?","Après une suspicion de compromission, que vérifier dans les paramètres de votre messagerie ?",["Forwarding rules and recent sign-in activity|Les règles de redirection et l'activité de connexion récente","The font size|La taille de la police","The signature colour|La couleur de la signature","The inbox sort order|L'ordre de tri de la boîte"],0,"Attackers often add hidden forwarding rules to keep reading your mail after you change your password.","Les attaquants ajoutent souvent des règles de redirection cachées pour continuer à lire vos e-mails après un changement de mot de passe."),
+/* Work and payments */
+Q("The 'CEO' emails the finance team: 'Urgent confidential transfer, tell nobody.' Which control helps most?","Le « PDG » écrit à l'équipe finance : « Virement urgent et confidentiel, n'en parlez à personne. » Quel contrôle aide le plus ?",["Pay quickly to impress|Payer vite pour faire bonne impression","A second person's approval and a call-back on a known number|L'approbation d'une seconde personne et un rappel sur un numéro connu","Reply asking for more details|Répondre pour demander plus de détails","Keep it secret as requested|Garder le secret comme demandé"],1,"Secrecy plus urgency is a red flag. Dual approval and out-of-band confirmation break the scam.","Secret et urgence forment un signal d'alerte. La double approbation et la confirmation par un autre canal font échouer l'arnaque."),
+Q("A vendor writes that their bank account has changed and attaches a new letterhead. What should you do?","Un fournisseur écrit que son compte bancaire a changé et joint un nouvel en-tête. Que faire ?",["Update the records, the letterhead looks right|Mettre à jour les données, l'en-tête semble correct","Confirm by phoning the vendor on a number you already hold before changing anything|Confirmer par téléphone auprès du fournisseur, sur un numéro que vous avez déjà, avant tout changement","Ask them to resend the email|Leur demander de renvoyer l'e-mail","Pay half to the new account|Payer la moitié sur le nouveau compte"],1,"Letterheads are easy to copy. A call on a trusted number is the check that works.","Les en-têtes se copient facilement. Un appel sur un numéro de confiance est la vérification qui fonctionne."),
+Q("Why can sharing your job role and tools publicly be a phishing risk?","Pourquoi partager publiquement votre poste et vos outils peut-il être un risque de phishing ?",["It is not a risk|Ce n'est pas un risque","Attackers use it to craft convincing targeted messages|Les attaquants s'en servent pour fabriquer des messages ciblés convaincants","It slows down your computer|Cela ralentit votre ordinateur","It changes your password|Cela modifie votre mot de passe"],1,"Public details help attackers write messages that sound right. Share with care.","Les détails publics aident les attaquants à écrire des messages crédibles. Partagez avec discernement."),
+Q("A colleague's email account suddenly sends odd links to everyone. What is likely?","Le compte e-mail d'un collègue envoie soudain des liens étranges à tout le monde. Que se passe-t-il probablement ?",["The colleague wants to share news|Le collègue veut partager une nouvelle","The account may be compromised: alert IT and do not click|Le compte est peut-être compromis : alertez l'informatique et ne cliquez pas","A software bug that fixes itself|Un bogue qui se corrige tout seul","A friendly test|Un test amical"],1,"Hijacked accounts are used to phish contacts, who trust the sender. Warn the colleague by another channel too.","Les comptes piratés servent à hameçonner les contacts, qui font confiance à l'expéditeur. Prévenez aussi le collègue par un autre canal."),
+Q("Which policy best protects against fake payment requests at work?","Quelle règle protège le mieux contre les fausses demandes de paiement au travail ?",["Verbal approval only|Une approbation orale seulement","Documented dual approval and out-of-band verification|Une double approbation documentée et une vérification par un autre canal","Approval by whoever shouts loudest|L'approbation par celui qui crie le plus fort","Skipping approvals when busy|Sauter les approbations quand on est occupé"],1,"Process beats persuasion. A clear rule protects staff from pressure.","Le processus l'emporte sur la persuasion. Une règle claire protège le personnel de la pression."),
+/* QR, mobile, documents */
+Q("A QR sticker has been placed over the real one on a parking payment machine. What is the risk?","Un autocollant QR a été collé sur le vrai code d'un horodateur. Quel est le risque ?",["None|Aucun","Quishing: it may lead to a fake payment page|Le quishing : il peut mener vers une fausse page de paiement","A slower payment|Un paiement plus lent","Free parking|Un stationnement gratuit"],1,"Anyone can print a QR code. Check the address it opens and pay in the official app when you can.","N'importe qui peut imprimer un QR code. Vérifiez l'adresse qui s'ouvre et payez dans l'appli officielle si possible."),
+Q("An app from outside the official store asks to read your SMS. What is a sensible response?","Une appli hors de la boutique officielle demande à lire vos SMS. Quelle réponse est raisonnable ?",["Allow it, apps need SMS|L'autoriser, les applis ont besoin des SMS","Do not install apps from unofficial sources, and avoid granting SMS access without need|Ne pas installer d'applis hors des boutiques officielles et éviter d'accorder l'accès aux SMS sans nécessité","Allow it to see the news|L'autoriser pour voir l'actualité","Install it twice|L'installer deux fois"],1,"SMS access lets malware read one-time codes. Stick to official stores and minimal permissions.","L'accès aux SMS permet à un logiciel malveillant de lire vos codes à usage unique. Restez sur les boutiques officielles et des permissions minimales."),
+Q("A document says 'Enable macros to view content'. What should you do?","Un document dit « Activez les macros pour afficher le contenu ». Que faire ?",["Enable them|Les activer","Do not enable them unless you trust the source and expected the file|Ne pas les activer sauf si vous faites confiance à la source et attendiez le fichier","Enable them, then run antivirus|Les activer, puis lancer un antivirus","Print the document|Imprimer le document"],1,"Macros are a classic way to run malware. A genuine document rarely needs them just to be read.","Les macros sont un moyen classique d'exécuter un logiciel malveillant. Un vrai document en a rarement besoin pour être lu."),
+Q("A friend's message with a link feels out of character. What is a good habit?","Le message d'un ami avec un lien vous semble inhabituel. Quelle bonne habitude adopter ?",["Click, they are friends|Cliquer, ce sont des amis","Ask them through another channel whether they really sent it|Leur demander par un autre canal s'ils l'ont vraiment envoyé","Share it onward|Le partager à d'autres","Reply 'thanks'|Répondre « merci »"],1,"Hijacked accounts message contacts. A quick call settles it and warns your friend.","Les comptes piratés écrivent à leurs contacts. Un appel rapide règle la question et prévient votre ami.")
+];
+
+/* ============ state ============ */
+var done={intro:false,email:false,sites:false,tactics:false,habits:false,cases:false,quiz:false};
+var MODS=[["intro","mod1","n_intro","#intro"],["email","mod2","n_email","#email"],["sites","mod3","n_sites","#sites"],["tactics","mod4","n_tactics","#tactics"],["habits","mod5","n_habits","#habits"],["cases","mod6","n_cases","#cases"],["quiz","mod7","n_quiz","#quiz"]];
+var found={},urlAns={},ticked={};
+var mq={order:[],perms:[],qi:0,score:0,miss:[],picked:null};
+var pg={phase:"idle",pool:[],round:1,ids:[],perms:{},qi:0,score:0,total:0,miss:[],picked:null,rounds:0};
+
+function progress(){
+  var n=0;MODS.forEach(function(m){if(done[m[0]])n++});
+  var p=Math.round(n/MODS.length*100);$("#pct").textContent=p+"%";$("#fill").style.width=p+"%";
+  $("#pc-list").innerHTML=MODS.map(function(m){
+    return '<li class="'+(done[m[0]]?"ok":"")+'"><span aria-hidden="true">'+(done[m[0]]?"✓":"○")+'</span><a href="'+m[3]+'">'+esc(tr(m[1]))+' · '+esc(tr(m[2]))+'</a></li>';
+  }).join("");
+  document.querySelectorAll("#pc-list a").forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();var t=$(a.getAttribute("href"));if(t)t.scrollIntoView({behavior:"smooth",block:"start"})})});
+}
+function renderDone(){
+  document.querySelectorAll(".done-btn").forEach(function(b){var on=done[b.dataset.k];b.classList.toggle("on",on);b.setAttribute("aria-pressed",on?"true":"false");b.textContent=on?tr("done_on"):tr("done_off")});
+}
+document.querySelectorAll(".done-btn").forEach(function(b){b.addEventListener("click",function(){done[b.dataset.k]=!done[b.dataset.k];renderDone();progress()})});
+
+/* ============ renderers ============ */
+function renderTypes(){
+  $("#types").innerHTML=TYPES.map(function(x){var i=ix();return '<div><b>'+esc(x[i])+'</b>'+esc(x[2+i])+'</div>'}).join("");
+}
+function renderFlags(){
+  var i=ix(),keys=Object.keys(found).map(Number).sort(function(a,b){return a-b});
+  $("#flags").innerHTML=keys.map(function(k){return '<div class="flag"><b>'+esc(FLAGS[k][i])+'</b><span>'+esc(FLAGS[k][2+i])+'</span></div>'}).join("");
+  $("#fcount").textContent=fmt(tr("e_found"),{n:keys.length});
+  document.querySelectorAll(".hs").forEach(function(b){b.classList.toggle("found",found[b.dataset.f]===true)});
+  if(keys.length===7&&!done.email){done.email=true;progress()}
+}
+function renderUrlGame(){
+  var i=ix();
+  $("#urlgame").innerHTML=URLS.map(function(u,n){
+    var a=urlAns[n],has=a!==undefined,ok=has&&a===u[1];
+    return '<div class="g-row'+(has?(ok?" ok":" no"):"")+'"><span class="u">'+esc(u[0])+'</span><div class="choice"><button data-n="'+n+'" data-a="1"'+(has?" disabled":"")+'>'+esc(tr("s_real"))+'</button><button data-n="'+n+'" data-a="0"'+(has?" disabled":"")+'>'+esc(tr("s_fake"))+'</button></div>'+
+      (has?'<p class="why">'+esc(ok?tr("s_ok"):tr("s_no"))+esc(u[2+i])+'</p>':'')+'</div>';
+  }).join("");
+  document.querySelectorAll("#urlgame button").forEach(function(b){b.addEventListener("click",function(){
+    urlAns[+b.dataset.n]=(b.dataset.a==="1");renderUrlGame();
+    if(Object.keys(urlAns).length===URLS.length&&!done.sites){done.sites=true;progress()}
+  })});
+}
+function renderTactics(){
+  var i=ix();
+  $("#tactics-grid").innerHTML=TAC.map(function(t){
+    var ex=i===0?"“"+t[4]+"”":"« "+t[5]+" »";
+    return '<div class="card tac"><h3><span>'+esc(t[i])+'</span><span class="pill">'+esc(t[2+i])+'</span></h3><q>'+esc(ex)+'</q><p>'+esc(tr("t_why"))+' '+esc(t[6+i])+'</p><p class="fix"><b>'+esc(tr("t_fix"))+'</b> '+esc(t[8+i])+'</p></div>';
+  }).join("");
+}
+function renderHabits(){
+  var i=ix();
+  $("#check").innerHTML=HAB.map(function(h,n){
+    return '<li><label class="'+(ticked[n]?"on":"")+'"><input type="checkbox" data-n="'+n+'"'+(ticked[n]?" checked":"")+'><span><b>'+esc(h[2*i])+'</b><small>'+esc(h[2*i+1])+'</small></span></label></li>';
+  }).join("");
+  updateHabitCount();
+  document.querySelectorAll("#check input").forEach(function(c){c.addEventListener("change",function(){
+    ticked[c.dataset.n]=c.checked;c.closest("label").classList.toggle("on",c.checked);
+    updateHabitCount();done.habits=(countTicks()===HAB.length);progress();
+  })});
+}
+function countTicks(){return HAB.filter(function(_,n){return ticked[n]}).length}
+function updateHabitCount(){$("#hcount").textContent=fmt(tr("b_count"),{n:countTicks(),m:HAB.length})}
+function renderCases(){
+  var i=ix();
+  $("#cases-grid").innerHTML=CASES.map(function(c){
+    return '<div class="card case"><span class="yr">'+esc(c[0])+'</span><h3>'+esc(c[1+i])+'</h3><p style="font-size:.92rem;color:var(--muted)">'+esc(c[3+i])+'</p><p class="lesson"><b>'+esc(tr("c_lesson"))+'</b> '+esc(c[5+i])+'</p></div>';
+  }).join("");
+}
+
+/* generic question card html */
+function qHTML(q,perm,picked){
+  var i=ix();
+  var h='<p class="q-prompt">'+esc(q.q[i])+'</p><div class="opts">';
+  perm.forEach(function(orig,p){
+    var cls="opt";
+    if(picked!==null){if(orig===q.a)cls+=" right";else if(p===picked)cls+=" wrong"}
+    h+='<button class="'+cls+'" data-p="'+p+'"'+(picked!==null?" disabled":"")+'>'+esc(q.o[orig][i])+'</button>';
+  });
+  h+='</div>';
+  if(picked!==null){
+    var ok=perm[picked]===q.a;
+    h+='<div class="expl"><b>'+esc(ok?tr("q_ok"):tr("q_no"))+'</b>'+esc(q.e[i])+'</div>';
+  }
+  return h;
+}
+
+/* ---- Mindset Quiz ---- */
+function startMQ(){
+  mq.perms=MQ.map(function(){return [0,1,2,3]});
+  mq.qi=0;mq.score=0;mq.miss=[];mq.picked=null;renderMQ();
+}
+function renderMQ(){
+  var box=$("#quizbox"),i=ix(),n=MQ.length;
+  if(mq.qi>=n){
+    var v=mq.score>=8?tr("q_v1"):mq.score>=5?tr("q_v2"):tr("q_v3");
+    box.innerHTML='<div class="score"><span class="label">'+esc(tr("q_res"))+'</span><span class="big">'+mq.score+' / '+n+'</span><p>'+esc(v)+'</p>'+
+      (mq.miss.length?'<h3>'+esc(tr("q_rev"))+'</h3><ul class="review">'+mq.miss.map(function(k){return '<li><span class="pill bad">'+esc(tr("q_miss"))+'</span><span>'+esc(MQ[k].e[i])+'</span></li>'}).join("")+'</ul>':'<p>'+esc(tr("q_perfect"))+'</p>')+
+      '<p style="color:var(--muted)">'+esc(tr("q_more"))+'</p><div class="tools"><button class="btn primary" id="toGame">'+esc(tr("q_goto"))+'</button><button class="btn alt" id="retry">'+esc(tr("q_retry"))+'</button></div></div>';
+    $("#retry").addEventListener("click",startMQ);
+    $("#toGame").addEventListener("click",function(){$("#phishgame").scrollIntoView({behavior:"smooth",block:"start"})});
+    if(!done.quiz){done.quiz=true;progress()}
+    return;
+  }
+  var q=MQ[mq.qi],perm=mq.perms[mq.qi];
+  box.innerHTML='<div class="qh"><span class="label">'+esc(fmt(tr("q_qn"),{i:mq.qi+1,n:n}))+'</span><span class="mono">'+esc(fmt(tr("q_score"),{s:mq.score}))+'</span></div><div style="margin-top:10px">'+qHTML(q,perm,mq.picked)+'</div>'+
+    (mq.picked!==null?'<div class="tools" style="margin-top:14px"><button class="btn" id="next">'+esc(mq.qi===n-1?tr("q_see"):tr("q_next"))+'</button></div>':'');
+  if(mq.picked===null){
+    box.querySelectorAll(".opt").forEach(function(b){b.addEventListener("click",function(){
+      var p=+b.dataset.p;mq.picked=p;
+      if(perm[p]===q.a)mq.score++;else mq.miss.push(mq.qi);
+      renderMQ();var nx=$("#next");if(nx)nx.focus();
+    })});
+  }else{
+    $("#next").addEventListener("click",function(){mq.qi++;mq.picked=null;renderMQ()});
+  }
+}
+
+/* ---- PhishGame ---- */
+function pgStartSession(){
+  pg.pool=shuffle(GQ.map(function(_,k){return k}));
+  pg.round=1;pg.total=0;pg.rounds=0;pgStartRound();
+}
+function pgStartRound(){
+  pg.ids=pg.pool.slice((pg.round-1)*10,pg.round*10);
+  pg.perms={};pg.ids.forEach(function(id){pg.perms[id]=shuffle([0,1,2,3])});
+  pg.qi=0;pg.score=0;pg.miss=[];pg.picked=null;pg.phase="play";renderPG();
+}
+function pips(){
+  var h='<div class="pips">';
+  for(var r=1;r<=5;r++){
+    var cls="pip";
+    if(pg.phase==="win"||r<pg.round||(r===pg.round&&(pg.phase==="roundEnd")))cls+=" ok";
+    else if(r===pg.round&&pg.phase==="play")cls+=" cur";
+    h+='<span class="'+cls+'">'+r+'</span>';
+  }
+  return h+'</div>';
+}
+function missList(){
+  var i=ix();
+  if(!pg.miss.length)return "";
+  return '<h3>'+esc(tr("g_review"))+'</h3><ul class="review">'+pg.miss.map(function(id){return '<li><span class="pill bad">'+esc(tr("q_miss"))+'</span><span>'+esc(GQ[id].e[i])+'</span></li>'}).join("")+'</ul>';
+}
+function renderPG(){
+  var box=$("#pgbox"),i=ix();
+  if(pg.phase==="idle"){
+    box.innerHTML='<div class="score"><ul class="rules"><li>'+esc(tr("g_r1"))+'</li><li>'+esc(tr("g_r2"))+'</li><li>'+esc(tr("g_r3"))+'</li><li>'+esc(tr("g_r4"))+'</li></ul><div class="tools"><button class="btn primary" id="play">'+esc(tr("g_play"))+'</button></div></div>';
+    $("#play").addEventListener("click",pgStartSession);return;
+  }
+  if(pg.phase==="play"){
+    var id=pg.ids[pg.qi],q=GQ[id],perm=pg.perms[id];
+    box.innerHTML='<div class="qh">'+pips()+'<span class="mono">'+esc(fmt(tr("g_rs"),{s:pg.score}))+' · '+esc(fmt(tr("g_tot"),{t:pg.total+pg.score}))+'</span></div>'+
+      '<div class="qh" style="margin-top:12px"><span class="label">'+esc(fmt(tr("g_round"),{r:pg.round}))+' · '+esc(fmt(tr("g_q"),{i:pg.qi+1}))+'</span></div><div style="margin-top:10px">'+qHTML(q,perm,pg.picked)+'</div>'+
+      (pg.picked!==null?'<div class="tools" style="margin-top:14px"><button class="btn" id="pnext">'+esc(pg.qi===9?tr("q_see"):tr("q_next"))+'</button></div>':'');
+    if(pg.picked===null){
+      box.querySelectorAll(".opt").forEach(function(b){b.addEventListener("click",function(){
+        var p=+b.dataset.p;pg.picked=p;
+        if(perm[p]===q.a)pg.score++;else pg.miss.push(id);
+        renderPG();var nx=$("#pnext");if(nx)nx.focus();
+      })});
+    }else{
+      $("#pnext").addEventListener("click",function(){
+        pg.qi++;pg.picked=null;
+        if(pg.qi<10){renderPG();return}
+        pg.total+=pg.score;pg.rounds++;
+        if(pg.score>5){pg.phase=pg.round===5?"win":"roundEnd"}else{pg.phase="over"}
+        renderPG();
+      });
+    }
+    return;
+  }
+  var head='<div class="score">'+pips();
+  if(pg.phase==="roundEnd"){
+    box.innerHTML=head+'<span class="label">'+esc(fmt(tr("g_done"),{r:pg.round,s:pg.score}))+'</span><span class="big">'+pg.score+' / 10</span><p>'+esc(fmt(tr("g_unlock"),{n:pg.round+1}))+' · '+esc(fmt(tr("g_tot"),{t:pg.total}))+'</p>'+missList()+'<div class="tools"><button class="btn primary" id="nround">'+esc(fmt(tr("g_start"),{n:pg.round+1}))+'</button></div></div>';
+    $("#nround").addEventListener("click",function(){pg.round++;pgStartRound()});
+  }else if(pg.phase==="over"){
+    box.innerHTML=head+'<span class="label">'+esc(fmt(tr("g_done"),{r:pg.round,s:pg.score}))+'</span><span class="big">'+pg.score+' / 10</span><p>'+esc(fmt(tr("g_over"),{t:pg.total,k:pg.rounds}))+'</p>'+missList()+'<div class="tools"><button class="btn primary" id="again">'+esc(tr("g_new"))+'</button></div></div>';
+    $("#again").addEventListener("click",pgStartSession);
+  }else if(pg.phase==="win"){
+    box.innerHTML=head+'<span class="label">'+esc(tr("g_win_h"))+'</span><span class="big">'+pg.total+' / 50</span><p>'+esc(fmt(tr("g_win"),{t:pg.total}))+'</p>'+missList()+'<div class="tools"><button class="btn primary" id="again">'+esc(tr("g_again"))+'</button></div></div>';
+    $("#again").addEventListener("click",pgStartSession);
+  }
+}
+
+/* ============ language ============ */
+function renderAll(){
+  applyStatic();renderTypes();renderFlags();renderUrlGame();renderTactics();renderHabits();renderCases();renderMQ();renderPG();renderDone();progress();
+}
+function setLang(l){
+  L=l;try{localStorage.setItem("spf-lang",l)}catch(e){}
+  document.documentElement.lang=l;
+  document.querySelectorAll(".lang button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.l===l?"true":"false")});
+  renderAll();
+}
+document.querySelectorAll(".lang button").forEach(function(b){b.addEventListener("click",function(){setLang(b.dataset.l)})});
+document.querySelectorAll(".bar a[href^='#']").forEach(function(a){
+  a.addEventListener("click",function(e){e.preventDefault();var t=$(a.getAttribute("href"));if(t)t.scrollIntoView({behavior:"smooth",block:"start"})});
+});
+document.querySelectorAll(".hs").forEach(function(b){b.addEventListener("click",function(){found[b.dataset.f]=true;renderFlags()})});
+$("#revealAll").addEventListener("click",function(){FLAGS.forEach(function(_,k){found[k]=true});renderFlags()});
+
+mq.perms=MQ.map(function(){return [0,1,2,3]});
+setLang(L);progress();
+})();
+</script>
+
+</body></html>
