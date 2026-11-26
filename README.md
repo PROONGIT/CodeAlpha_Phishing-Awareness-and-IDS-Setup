@@ -38,7 +38,11 @@ This internship program offers hands-on experience in cybersecurity principles a
 
 ---
 
-# ✅ TASK 2: Phishing Awareness Training
+# 🪝 Phishing Awareness Training - Online web app
+
+---
+
+## ✅ TASK 2 :
 
 ● Create a presentation or online module focused on phishing attacks.
 
@@ -49,4 +53,25 @@ This internship program offers hands-on experience in cybersecurity principles a
 ● Provide best practices and tips to avoid falling victim.
 
 ● Include real-world examples and interactive quizzes for better engagement.
+
+## 💎 My built solution
+
+I'll build an interactive phishing awareness module as a shareable web page, with lessons, real-world examples and quizzes.
+
+
+---
+
+# 👤 Author
+
+**AZIAGBEDO KOKOU SODJINE**\
+Certified Cybersecurity Educator Professional (CCEP)\
+Computer Science Eng. | IT Security & Data science
+
+LinkedIn: https://www.linkedin.com/in/kokou-sodjin%C3%A8-aziagbedo-434b2949
+
+---
+
+## 📌 Project Information
+
+**Program Name:** Cybersecurity at CodeAlpha | **Tasks:** 2 and 4 | **Projects:** Phishing Awareness Training & Network IDS Setup | **Repository:** GitHub
 
