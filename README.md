@@ -58,7 +58,7 @@ This internship program offers hands-on experience in cybersecurity principles a
 
 I built an interactive phishing awareness module as a shareable web page, with lessons, real-world examples and quizzes.
 
-The web application **Spot the Phish** 
+The web application **Spot the Phish** is available at :  https://proongit.github.io/CodeAlpha_Phishing-Awareness-and-IDS-Setup/
 
 
 ---
