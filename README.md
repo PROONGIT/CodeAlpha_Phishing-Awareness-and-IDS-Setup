@@ -70,7 +70,7 @@ You can try the **Spot the Phish** web application by clicking on this link :  [
 
 ---
 
-## The "Spot the Phish" app description 
+## 💎 The "Spot the Phish" app description 
 
 Spot the Phish is a bilingual (English and French) phishing awareness course delivered as one self-contained HTML file. 
 
@@ -82,7 +82,7 @@ The course has seven core modules, a fixed 10-question Mindset Quiz and an optio
 
 ### Getting and opening the code file
 
-The whole app is the single file `/Task2/spot-the-phish.html`; you can open it on your own computer or put it online. It does not require a server or installation. So it can easily be shared hand-to-hand or downloaded.
+The whole app is the single file `/Task2/spot-the-phish.html`; you can open it on your own computer or put it online. It does not require any server, setting or installation. So it can easily be shared hand-to-hand or downloaded.
 
 1. **Save the file.** Keep `spot-the-phish.html` in any folder.
 2. **Open it locally.** Double-click the file, or drag it into Chrome, Edge, Firefox or Safari. It runs straight from your disk.
