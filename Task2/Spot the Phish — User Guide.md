@@ -44,7 +44,7 @@ The EN/FR switch changes every text, including questions and explanations, witho
 
 Your progression is the number of core modules completed out of 7, so each module is worth about 14%. The bar therefore moves through 14%, 29%, 43%, 57%, 71%, 86% and 100%. PhishGame is optional and never changes it.
 
-Modules 1, 4 and 6 are reading modules, so they have a **Done** button; press it again to undo. Modules 2, 3, 5 and 7 complete on their own once you finish their activity and get a mnimum required score of 60%. A card under the title lists the seven modules and shows a tick next to each one that counts.
+Modules 1, 4 and 6 are reading modules, so they have a **Done** button; press it again to undo. Modules 2 and 5 complete on their own once you finish their activity. Modules 3 and 7 need a minimum score: at least 4 out of 6 and at least 6 out of 10. A card under the title lists the seven modules and shows a tick next to each one that counts.
 
 Scores are kept separate from progression:
 
@@ -65,7 +65,7 @@ The Mindset Quiz is a fixed set of 10 scenario questions, always in the same ord
 4. The results show your score out of 10, a short verdict, and an explanation for every question you missed.
 5. Press **Try again** to replay, or **Go to PhishGame** to go further.
 
-Reaching the results marks module 7 as complete, whatever your score. A retry replays the same 10 questions.
+Module 7 counts toward your progression only if you score at least 6 out of 10. With 5 or fewer, press Try again to replay the same 10 questions.
 
 ## PhishGame
 
