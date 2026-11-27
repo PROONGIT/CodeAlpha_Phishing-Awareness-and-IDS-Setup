@@ -185,7 +185,7 @@ A mobile app version exists as an Expo (React Native) project with the same cont
 
 ## 📚Spot the Phish Documentation
 
-My web app User Guide **`/Task2/Spot the Phish -- User Guide.md`** and slides for its presentation to the public **`/Task2/Spot the Phish -- Solution Presentation.pdf`** are documented and publicly available.
+My web app User Guide **`/Task2/Spot the Phish — User Guide.md`** and slides for its presentation to the public **`/Task2/Spot the Phish — Solution Presentation.pdf`** are documented and publicly available.
 
 The code file is **`/Task2/Spot the Phish.html`**. 
 
