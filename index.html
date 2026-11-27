@@ -224,6 +224,7 @@ footer{padding-top:32px;font-size:.85rem;color:var(--muted);border-top:1px solid
   <h3 data-t="s_prac"></h3>
   <p class="callout"><span data-t="s_prac_p"></span> <span class="mono dom-chip">meridian-bank.example</span></p>
   <div class="game" id="urlgame"></div>
+  <div class="card" id="urlresult" aria-live="polite"></div>
   <div class="card"><h3 data-t="s_other_h"></h3><p style="margin-top:8px;color:var(--muted)" data-t="s_other_p"></p></div>
 </section>
 
@@ -300,7 +301,7 @@ s_title:"Recognize a fake website",
 s_p:"Only one part of a web address tells you who owns the site: the <b>registered domain</b>, the name just before the final ending (.com, .tg, .org). Everything to its left is chosen by whoever owns that domain, and everything after the first single slash is just a page on that site.",
 s_l1:"Protocol",s_l2:"Subdomain (created freely by the domain owner)",s_l3:"Registered domain: the owner",s_l4:"Page path",
 s_note:"Training addresses here end in .example, a reserved ending that never resolves, so none of these are real sites. In real life the same patterns appear with .com, .net and country endings. A padlock or https only means the connection is encrypted. Attackers get certificates too, so it does not prove the site is genuine.",
-s_prac:"Practice: real or fake?",s_prac_p:"The real bank's domain is",s_real:"Real",s_fake:"Fake",s_ok:"Correct. ",s_no:"Not quite. ",
+s_prac:"Practice: real or fake?",s_prac_p:"The real bank's domain is",s_real:"Real",s_fake:"Fake",s_ok:"Correct. ",s_no:"Not quite. ",s_pass:"Module validated. It now counts in your progression.",s_fail:"You need at least 4 out of 6 to validate this module and count it in your progression. Review the explanations, then try again.",s_retry:"Try again",
 s_other_h:"Other signs a page is a copy",
 s_other_p:"You arrived through a message instead of your own bookmark. The page asks for more than usual (card PIN, full password and one-time code together). Small layout, spelling or logo flaws. The login box appears in a pop-up. The address bar shows an unfamiliar domain, even if the page looks perfect.",
 t_title:"Social engineering: how attackers trick people",
@@ -346,7 +347,7 @@ s_title:"Reconnaître un faux site web",
 s_p:"Une seule partie d'une adresse web indique à qui appartient le site : le <b>domaine enregistré</b>, c'est-à-dire le nom juste avant la terminaison finale (.com, .tg, .org). Tout ce qui se trouve à sa gauche est choisi par le propriétaire du domaine, et tout ce qui suit le premier « / » n'est qu'une page de ce site.",
 s_l1:"Protocole",s_l2:"Sous-domaine (créé librement par le propriétaire du domaine)",s_l3:"Domaine enregistré : le propriétaire",s_l4:"Chemin de la page",
 s_note:"Dans cette formation, les adresses se terminent par .example, une terminaison réservée qui ne mène nulle part : aucun de ces sites n'est réel. Dans la vraie vie, les mêmes schémas apparaissent avec .com, .net ou des terminaisons de pays. Un cadenas ou « https » indique seulement que la connexion est chiffrée. Les attaquants obtiennent aussi des certificats : cela ne prouve pas que le site est authentique.",
-s_prac:"Entraînement : vrai ou faux ?",s_prac_p:"Le vrai domaine de la banque est",s_real:"Vrai",s_fake:"Faux",s_ok:"Exact. ",s_no:"Pas tout à fait. ",
+s_prac:"Entraînement : vrai ou faux ?",s_prac_p:"Le vrai domaine de la banque est",s_real:"Vrai",s_fake:"Faux",s_ok:"Exact. ",s_no:"Pas tout à fait. ",s_pass:"Module validé. Il compte désormais dans votre progression.",s_fail:"Il faut au moins 4 sur 6 pour valider ce module et le compter dans votre progression. Relisez les explications, puis réessayez.",s_retry:"Réessayer",
 s_other_h:"Autres signes qu'une page est une copie",
 s_other_p:"Vous êtes arrivé par un message plutôt que par votre propre favori. La page demande plus que d'habitude (code PIN de carte, mot de passe complet et code à usage unique ensemble). Petits défauts de mise en page, d'orthographe ou de logo. La zone de connexion s'affiche dans une fenêtre pop-up. La barre d'adresse affiche un domaine inconnu, même si la page est parfaite.",
 t_title:"Ingénierie sociale : comment les attaquants manipulent leurs cibles",
@@ -538,6 +539,7 @@ var done={intro:false,email:false,sites:false,tactics:false,habits:false,cases:f
 var MODS=[["intro","mod1","n_intro","#intro"],["email","mod2","n_email","#email"],["sites","mod3","n_sites","#sites"],["tactics","mod4","n_tactics","#tactics"],["habits","mod5","n_habits","#habits"],["cases","mod6","n_cases","#cases"],["quiz","mod7","n_quiz","#quiz"]];
 var found={},urlAns={},ticked={};
 var PASS_MARK=6; /* minimum Mindset Quiz score (out of 10) that validates module 7 */
+var URL_PASS_MARK=4; /* minimum score (out of 6) to validate module 3 */
 var mq={order:[],perms:[],qi:0,score:0,miss:[],picked:null};
 var pg={phase:"idle",pool:[],round:1,ids:[],perms:{},qi:0,score:0,total:0,miss:[],picked:null,rounds:0};
 
@@ -574,8 +576,15 @@ function renderUrlGame(){
   }).join("");
   document.querySelectorAll("#urlgame button").forEach(function(b){b.addEventListener("click",function(){
     urlAns[+b.dataset.n]=(b.dataset.a==="1");renderUrlGame();
-    if(Object.keys(urlAns).length===URLS.length&&!done.sites){done.sites=true;progress()}
   })});
+  var answered=Object.keys(urlAns).length;
+  var result=$("#urlresult");
+  if(answered===URLS.length){
+    var score=URLS.reduce(function(sum,u,n){return sum+(urlAns[n]===u[1]?1:0)},0),passed=score>=URL_PASS_MARK;
+    result.innerHTML='<div class="score"><span class="label">'+esc(tr("q_res"))+'</span><span class="big">'+score+' / '+URLS.length+'</span><p class="'+(passed?"okbox":"note")+'">'+esc(passed?tr("s_pass"):tr("s_fail"))+'</p>'+(passed?'':'<div class="tools"><button class="btn alt" id="urlretry">'+esc(tr("s_retry"))+'</button></div>')+'</div>';
+    if(passed&&!done.sites){done.sites=true;progress()}
+    if(!passed){$("#urlretry").addEventListener("click",function(){urlAns={};done.sites=false;result.innerHTML="";renderUrlGame();progress()})}
+  }else{result.innerHTML="";}
 }
 function renderTactics(){
   var i=ix();
