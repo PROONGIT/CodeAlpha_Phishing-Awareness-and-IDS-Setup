@@ -169,7 +169,7 @@ The 50 PhishGame questions cover eight themes:
 
 50 questions in the PhishGame bank, every round deals 10. With more than 50, each session draws a different 50, which adds variety. The Mindset Quiz is written for 10 questions, and its intro text and score verdicts use that number. The shuffling lives during the PhishGame and affects only that game; the Mindset Quiz uses no shuffle.
 
-## Tips, limits and the mobile app
+### Tips, limits and the mobile app
 
 Use the course in two steps: take the Mindset Quiz first as a baseline, then play PhishGame for more depth. For a group session, ask learners to compare their results after each round and discuss the questions they missed.
 
@@ -183,7 +183,7 @@ A mobile app version exists as an Expo (React Native) project with the same cont
 
 ---
 
-## Spot the Phish Documentation
+## 📚Spot the Phish Documentation
 
 My web app User Guide **`/Task2/Spot the Phish -- User Guide.md`** and slides for its presentation to the public **`/Task2/Spot the Phish -- Solution Presentation.pdf`** are documented and publicly available.
 
