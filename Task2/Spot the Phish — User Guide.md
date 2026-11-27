@@ -31,12 +31,12 @@ Work through the modules in order, or jump to any of them from the menu. The top
 | --- | --- | --- |
 | 1. Basics | Read the types of phishing (phishing, spear phishing, whaling, smishing, vishing, BEC, quishing, fake sites) | Press **Done** |
 | 2. Emails | Tap the 7 suspicious parts of a fake bank email; each one explains itself | Counts when all 7 are found |
-| 3. Fake sites | Learn the parts of a web address, then judge 6 addresses as real or fake | Counts when all 6 are answered |
+| 3. Fake sites | Learn the parts of a web address, then judge 6 addresses as real or fake | Counts when all 6 are answered and score is at least 4/6 |
 | 4. Social engineering | Read 7 manipulation tactics, each with a sample message and a counter | Press **Done** |
 | 5. Habits | Tick the 11 safe habits; each ticked habit turns green | Counts when all 11 are ticked |
 | 6. Real cases | Read 6 reported incidents with their lessons | Press **Done** |
-| 7. Mindset Quiz | Answer 10 scenario questions | Counts when you reach the results |
-| 8. PhishGame | Optional extra rounds of questions | Not counted |
+| 7. Mindset Quiz | Answer 10 scenario questions | Counts when you reach at least a score of 6/10 |
+| 8. PhishGame | Optional extra rounds of questions | Doesn't count for the general progression |
 
 The EN/FR switch changes every text, including questions and explanations, without losing your place.
 
@@ -44,16 +44,16 @@ The EN/FR switch changes every text, including questions and explanations, witho
 
 Your progression is the number of core modules completed out of 7, so each module is worth about 14%. The bar therefore moves through 14%, 29%, 43%, 57%, 71%, 86% and 100%. PhishGame is optional and never changes it.
 
-Modules 1, 4 and 6 are reading modules, so they have a **Done** button; press it again to undo. Modules 2, 3, 5 and 7 complete on their own once you finish their activity. A card under the title lists the seven modules and shows a tick next to each one that counts.
+Modules 1, 4 and 6 are reading modules, so they have a **Done** button; press it again to undo. Modules 2, 3, 5 and 7 complete on their own once you finish their activity and get a mnimum required score of 60%. A card under the title lists the seven modules and shows a tick next to each one that counts.
 
 Scores are kept separate from progression:
 
 - **Module 2:** a counter shows how many of the 7 signs you have found.
-- **Module 3:** each address gives instant feedback; there is no total.
-- **Mindset Quiz:** 1 point per correct answer, out of 10. A score of 8 to 10 is "strong instincts", 5 to 7 is "solid base, revisit the missed modules", and 0 to 4 suggests another pass through modules 2 to 5.
-- **PhishGame:** 1 point per correct answer, scored per round out of 10 and in total out of 50.
+- **Module 3:** each address gives instant feedback; the minimum required score to validate is 4/6.
+- **Mindset Quiz:** 1 point per correct answer, out of 10. A score of 8 to 10 is "strong instincts", 6 to 7 is "solid base, revisit the missed modules", and 0 to 5 suggests another pass through modules 2 to 5. The minimum required score to validate is 6/10.
+- **PhishGame:** 1 point per correct answer, scored per round out of 10 and in total out of 50. A minimum score of 6/10 is required to validate a round.
 
-In the web version, progress and scores live in the open page and reset when you reload it. Only your language choice is remembered, when the browser allows it.
+Progress and scores live in the open page and reset when you reload it. Only your language choice is remembered.
 
 ## Mindset Quiz
 
