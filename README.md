@@ -80,7 +80,7 @@ The course has seven core modules, a fixed 10-question Mindset Quiz and an optio
 - **Languages:** English by default, with a switch to French at any time.
 - **Works on:** any modern browser, on a computer or a mobile phone.
 
-## Getting and opening the code file
+### Getting and opening the code file
 
 The whole app is the single file `/Task2/spot-the-phish.html`; you can open it on your own computer or put it online. It does not require a server or installation. So it can easily be shared hand-to-hand or downloaded.
 
@@ -91,7 +91,7 @@ The whole app is the single file `/Task2/spot-the-phish.html`; you can open it o
 
 The page loads its fonts from Google Fonts, so a connection improves the look. Without internet it still works and falls back to your system fonts. To change anything, open the file in a plain text editor such as Notepad or VS Code; no build step is needed.
 
-## Using the app
+### Using the app
 
 Work through the modules in order, or jump to any of them from the menu. The top bar has two lines: the full menu of eight links on the first line, then your progression, a "How is it calculated?" link and the EN/FR switch on the second.
 
@@ -108,7 +108,7 @@ Work through the modules in order, or jump to any of them from the menu. The top
 
 The EN/FR switch changes every text, including questions and explanations, without losing your place.
 
-## Progression and scoring
+### Progression and scoring
 
 Your progression is the number of core modules completed out of 7, so each module is worth about 14%. The bar therefore moves through 14%, 29%, 43%, 57%, 71%, 86% and 100%. PhishGame is optional and never changes it.
 
@@ -123,7 +123,7 @@ Scores are kept separate from progression:
 
 In the web version, progress and scores live in the open page and reset when you reload it. Only your language choice is remembered, when the browser allows it.
 
-## Mindset Quiz
+### Mindset Quiz
 
 The Mindset Quiz is a fixed set of 10 scenario questions, always in the same order, so a learner can get familiar with them. The answer options also keep a fixed order.
 
@@ -135,7 +135,7 @@ The Mindset Quiz is a fixed set of 10 scenario questions, always in the same ord
 
 Reaching the results marks module 7 as complete, whatever your score. A retry replays the same 10 questions.
 
-## PhishGame
+### PhishGame
 
 PhishGame is an optional challenge of up to 5 rounds, each with 10 random questions drawn from a bank of 50. You need more than 50% in a round, which means at least 6 correct answers out of 10, to unlock the next one.
 
@@ -152,9 +152,7 @@ PhishGame is an optional challenge of up to 5 rounds, each with 10 random questi
 
 A full run of 5 rounds uses all 50 questions exactly once. A round you fail still uses up its 10 questions for that session. Progress through the rounds is shown by five numbered markers that fill in as you pass them.
 
-## How questions are set and edited
-
-Every question is one `Q(...)` line in the script at the bottom of the HTML file, written once in English and once in French. The 10 Mindset Quiz questions are in the list that starts with `var MQ=[`, and the 50 PhishGame questions are in the list that starts with `var GQ=[`.
+### How questions are set and edited
 
 The 50 PhishGame questions cover eight themes:
 
@@ -169,43 +167,19 @@ The 50 PhishGame questions cover eight themes:
 | Work and payments | 5 |
 | QR codes, apps and documents | 4 |
 
-Each question has the same shape:
-
-```javascript
-Q("Which part of an email address shows who really sent it?",
-  "Quelle partie d'une adresse e-mail montre qui l'a réellement envoyé ?",
-  ["The display name|Le nom affiché",
-   "The domain after the @|Le domaine après le @",
-   "The subject line|L'objet",
-   "The signature|La signature"],
-  1,
-  "Explanation in English.",
-  "Explication en français."),
-```
-
-The parts, in order: the question in English, the question in French, four options written as `English|French`, the number of the correct option, then the explanation in English and in French. Options are counted from 0, so `1` means the second option.
-
-To add or change a question:
-
-1. Open the file in a text editor and search for `var GQ=[` (or `var MQ=[`).
-2. Copy an existing `Q(...)` block and edit its texts. Keep exactly four options, keep the `|` between the English and French text, and do not use `|` inside a text.
-3. Set the correct-option number, and keep a comma after the closing bracket, as in the lines around it.
-4. Save, reload the page and test the question.
-
-Keep at least 50 questions in the PhishGame bank, because every round deals 10. With more than 50, each session draws a different 50, which adds variety. The Mindset Quiz is written for 10 questions, and its intro text and score verdicts use that number. The shuffling lives in the PhishGame functions and affects only that game; the Mindset Quiz uses the order you wrote.
+50 questions in the PhishGame bank, every round deals 10. With more than 50, each session draws a different 50, which adds variety. The Mindset Quiz is written for 10 questions, and its intro text and score verdicts use that number. The shuffling lives during the PhishGame and affects only that game; the Mindset Quiz uses no shuffle.
 
 ## Tips, limits and the mobile app
 
-Use the course in two steps: let everyone take the Mindset Quiz first as a baseline, then offer PhishGame to those who want more depth. For a group session, ask learners to compare their results after each round and discuss the questions they missed.
+Use the course in two steps: take the Mindset Quiz first as a baseline, then play PhishGame for more depth. For a group session, ask learners to compare their results after each round and discuss the questions they missed.
 
 Know these limits before you deploy it:
 
 - **No saved results.** Scores are not stored or sent anywhere, so the web version suits self-study rather than tracking a team.
 - **Easy to pass by luck.** With four options, a guesser can reach 6 out of 10 now and then. Raise the pass mark in the code if you need a stricter bar.
 - **Fictional examples.** Banks, senders and addresses are invented, and training addresses end in `.example`. The real-world case summaries come from general knowledge, so check them before using the course in a formal training.
-- **Fonts.** The look is best with an internet connection; the course works without one.
 
-A mobile app version exists as an Expo (React Native) project with the same content and functions, and it also saves progress and language on the phone. To build an Android APK, unzip the project, run `npm install`, then `npx expo prebuild --platform android`, open the `android` folder in Android Studio and choose Build APK(s). The project's README repeats these steps.
+A mobile app version exists as an Expo (React Native) project with the same content and functions, and it also saves progress and language on the phone. 
 
 ---
 
