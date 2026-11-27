@@ -1,6 +1,6 @@
 # Spot the Phish — User Guide
 
-Nov 26, 2026 · @AZIAGBEDO KOKOU SODJINE
+Nov 26, 2026 · @AZIAGBEDO KOKOU SODJINE, CC BY-NC.
 
 ## Overview
 
@@ -8,7 +8,7 @@ Spot the Phish is a bilingual (English and French) phishing awareness course del
 
 The course has seven core modules, a fixed 10-question Mindset Quiz and an optional game called PhishGame with a bank of 50 questions. A progression bar at the top shows how much of the core course you have completed.
 
-- **Audience:** staff, students and the general public who need to recognize phishing emails, fake websites and social engineering.
+- **Audience:** staff, students and the general public in order to recognize phishing emails, fake websites and social engineering.
 - **Languages:** English by default, with a switch to French at any time.
 - **Works on:** any modern browser, on a computer or a phone.
 
@@ -86,8 +86,6 @@ A full run of 5 rounds uses all 50 questions exactly once. A round you fail stil
 
 ## How questions are set and edited
 
-Every question is one `Q(...)` line in the script at the bottom of the HTML file, written once in English and once in French. The 10 Mindset Quiz questions are in the list that starts with `var MQ=[`, and the 50 PhishGame questions are in the list that starts with `var GQ=[`.
-
 The 50 PhishGame questions cover eight themes:
 
 | Theme | Questions |
@@ -101,40 +99,16 @@ The 50 PhishGame questions cover eight themes:
 | Work and payments | 5 |
 | QR codes, apps and documents | 4 |
 
-Each question has the same shape:
-
-```javascript
-Q("Which part of an email address shows who really sent it?",
-  "Quelle partie d'une adresse e-mail montre qui l'a réellement envoyé ?",
-  ["The display name|Le nom affiché",
-   "The domain after the @|Le domaine après le @",
-   "The subject line|L'objet",
-   "The signature|La signature"],
-  1,
-  "Explanation in English.",
-  "Explication en français."),
-```
-
-The parts, in order: the question in English, the question in French, four options written as `English|French`, the number of the correct option, then the explanation in English and in French. Options are counted from 0, so `1` means the second option.
-
-To add or change a question:
-
-1. Open the file in a text editor and search for `var GQ=[` (or `var MQ=[`).
-2. Copy an existing `Q(...)` block and edit its texts. Keep exactly four options, keep the `|` between the English and French text, and do not use `|` inside a text.
-3. Set the correct-option number, and keep a comma after the closing bracket, as in the lines around it.
-4. Save, reload the page and test the question.
-
-Keep at least 50 questions in the PhishGame bank, because every round deals 10. With more than 50, each session draws a different 50, which adds variety. The Mindset Quiz is written for 10 questions, and its intro text and score verdicts use that number. The shuffling lives in the PhishGame functions and affects only that game; the Mindset Quiz uses the order you wrote.
+50 questions in the PhishGame bank, every round deals 10. With more than 50, each session draws a different 50, which adds variety. The Mindset Quiz is written for 10 questions, and its intro text and score verdicts use that number. The shuffling lives during the PhishGame and affects only that game; the Mindset Quiz uses uses no shuffle.
 
 ## Tips, limits and the mobile app
 
-Use the course in two steps: let everyone take the Mindset Quiz first as a baseline, then offer PhishGame to those who want more depth. For a group session, ask learners to compare their results after each round and discuss the questions they missed.
+Use the course in two steps: take the Mindset Quiz first as a baseline, then play PhishGame for more depth. For a group session, ask learners to compare their results after each round and discuss the questions they missed.
 
 Know these limits before you deploy it:
 
 - **No saved results.** Scores are not stored or sent anywhere, so the web version suits self-study rather than tracking a team.
-- **Easy to pass by luck.** With four options, a guesser can reach 6 out of 10 now and then. Raise the pass mark in the code if you need a stricter bar.
+- **Easy to pass by luck.** With four options, a guesser can reach 6 out of 10 now and then. 
 - **Fictional examples.** Banks, senders and addresses are invented, and training addresses end in `.example`. The real-world case summaries come from general knowledge, so check them before using the course in a formal training.
-- **Fonts.** The look is best with an internet connection; the course works without one.
 
-A mobile app version exists as an Expo (React Native) project with the same content and functions, and it also saves progress and language on the phone. To build an Android APK, unzip the project, run `npm install`, then `npx expo prebuild --platform android`, open the `android` folder in Android Studio and choose Build APK(s). The project's README repeats these steps.
+A mobile app version exists as an Expo (React Native) project with the same content and functions, and it also saves progress and language on the phone. 
