@@ -99,12 +99,12 @@ Work through the modules in order, or jump to any of them from the menu. The top
 | --- | --- | --- |
 | 1. Basics | Read the types of phishing (phishing, spear phishing, whaling, smishing, vishing, BEC, quishing, fake sites) | Press **Done** |
 | 2. Emails | Tap the 7 suspicious parts of a fake bank email; each one explains itself | Counts when all 7 are found |
-| 3. Fake sites | Learn the parts of a web address, then judge 6 addresses as real or fake | Counts when all 6 are answered |
+| 3. Fake sites | Learn the parts of a web address, then judge 6 addresses as real or fake | Counts when all 6 are answered and score is at least 4/6 |
 | 4. Social engineering | Read 7 manipulation tactics, each with a sample message and a counter | Press **Done** |
 | 5. Habits | Tick the 11 safe habits; each ticked habit turns green | Counts when all 11 are ticked |
 | 6. Real cases | Read 6 reported incidents with their lessons | Press **Done** |
-| 7. Mindset Quiz | Answer 10 scenario questions | Counts when you reach the results |
-| 8. PhishGame | Optional extra rounds of questions | Not counted |
+| 7. Mindset Quiz | Answer 10 scenario questions | Counts when you reach at least a score of 6/10 |
+| 8. PhishGame | Optional extra rounds of questions | Doesn't count for the general progression |
 
 The EN/FR switch changes every text, including questions and explanations, without losing your place.
 
